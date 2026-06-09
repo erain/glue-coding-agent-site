@@ -1,0 +1,68 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const ogImage = new URL("/og.png", Astro.site ?? "https://glue-coding-agent-site.vercel.app").toString();
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://glue-coding-agent-site.vercel.app").toString();
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="glue — a coding agent for your terminal, on any model." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content="glue — a coding agent for your terminal, on any model." />
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <header class="border-b border-line bg-paper">
+      <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="/" class="text-ink font-medium tracking-tight">glue<span class="text-accent"> code</span></a>
+        <nav class="flex items-center gap-6 text-sm text-ink-soft">
+          <a href="#tui" class="hover:text-ink">TUI</a>
+          <a href="#goal" class="hover:text-ink">Goal loop</a>
+          <a href="#providers" class="hover:text-ink">Models</a>
+          <a href="https://github.com/erain/glue" class="hover:text-ink" rel="noopener">GitHub</a>
+        </nav>
+      </div>
+    </header>
+    <main class="flex-1">
+      <slot />
+    </main>
+    <footer class="border-t border-line mt-24">
+      <div class="max-w-3xl mx-auto px-6 py-10 text-sm text-ink-soft flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <a href="https://github.com/erain/glue" class="text-ink-soft hover:text-ink" rel="noopener">glue</a>
+          {" · "}
+          <a href="https://glue-framework-site.vercel.app" class="text-ink-soft hover:text-ink" rel="noopener">Framework</a>
+          {" · "}
+          <a href="https://glue-review.vercel.app" class="text-ink-soft hover:text-ink" rel="noopener">glue-review</a>
+          {" · "}
+          <a href="https://github.com/erain/glue/blob/main/CHANGELOG.md" class="text-ink-soft hover:text-ink" rel="noopener">Changelog</a>
+          {" · "}
+          MIT
+        </div>
+        <div class="text-ink-muted">The glue framework&rsquo;s own daily driver.</div>
+      </div>
+    </footer>
+  </body>
+</html>

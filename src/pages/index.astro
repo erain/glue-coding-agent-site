@@ -1,0 +1,359 @@
+---
+import Base from "../layouts/Base.astro";
+import Section from "../components/Section.astro";
+
+const title = "glue — a coding agent for your terminal, on any model";
+const description =
+  "glue is an open-source terminal coding agent in one static Go binary. Interactive TUI, permission-gated tools, autonomous goal loop, headless CI mode. Runs on Gemini, your ChatGPT subscription (Codex), or open-weight models via OpenRouter and NVIDIA.";
+
+const installSnippet = `go install github.com/erain/glue/cmd/glue@latest
+
+# interactive coding agent in the current repo
+export GEMINI_API_KEY=...
+glue run --coding --work .`;
+
+const tuiTranscript = `▶ edit_file  internal/server/router.go
+    - mux.Handle("/healthz", health)
+    + mux.Handle("/healthz", logged(health))
+    [a]llow once   [s]ession   [t]his file   [n]o
+
+⠸ shell_exec  go test ./internal/server/
+
+  All 14 tests pass. The health endpoint now logs
+  requests like every other route.
+
+› fix the flaky TestRetryBackoff next_`;
+
+const goalSnippet = `# pursue a goal autonomously: plan → make → verify, per iteration
+glue goal --coding --yolo --worktree \\
+  "Make golangci-lint pass on ./... without disabling checks"
+
+# exit code reflects the outcome:
+# 0 achieved · 2 blocked · 3 max-iterations · 4 budget · 1 error
+
+glue goal --list      # stored goals with status and age
+glue goal --resume    # continue from the verified checklist`;
+
+const scriptSnippet = `# one-shot
+glue run --coding --prompt "Run the tests, fix the first failure."
+
+# pipe a prompt in
+git diff main | glue run --prompt "Review this diff for bugs."
+
+# stable JSONL events for scripting
+glue run --coding --mode json --prompt "..." | jq -r '.type'`;
+
+const providers = [
+  {
+    title: "Gemini (primary)",
+    body: "Google's genai SDK with first-class Gemini 3.x support — thought-signature round-tripping, streamed reasoning, API-version pinning. <code>GEMINI_API_KEY</code> and go.",
+  },
+  {
+    title: "Codex — your ChatGPT subscription",
+    body: "No per-token bill. <code>codex login</code> once; glue reuses the auth. Intended for personal use.",
+  },
+  {
+    title: "OpenRouter — open-weight models",
+    body: "Kimi K2, Qwen, GLM, DeepSeek and friends by name — or <code>openrouter/free</code>, which auto-picks a currently-free model.",
+  },
+  {
+    title: "NVIDIA build + failover",
+    body: "OpenAI-compatible open-weight hosting via <code>NVIDIA_API_KEY</code>. <code>glue.WithFailover</code> skips providers whose keys aren't set.",
+  },
+];
+
+const tuiFeatures = [
+  {
+    title: "Tool cards with inline permissions",
+    body: "Every side-effecting tool call renders as a card with a spinner — and the [a]llow / [s]ession / [t]his-file / [n]o prompt right inside it. Reads never nag.",
+  },
+  {
+    title: "edit_file diff preview",
+    body: "See the exact surgical replacement before you approve it, not after.",
+  },
+  {
+    title: "@-file and /-command pickers",
+    body: "Type @ to fuzzy-pick a workspace file inline (secrets blocklisted); type / for filtering command autocomplete.",
+  },
+  {
+    title: "Markdown transcript",
+    body: "Streaming text re-renders as markdown after each turn settles. Mouse-wheel and PgUp/PgDn scroll; sticky-scroll keeps you pinned to the bottom only when you were there.",
+  },
+  {
+    title: "Session tree",
+    body: "/fork branches from any message, /clone duplicates, /tree visualizes the lineage and switches between branches.",
+  },
+  {
+    title: "Context controls",
+    body: "/compact summarizes older turns token-aware; /usage shows spend; /resume replays any stored session from a picker.",
+  },
+];
+---
+
+<Base title={title} description={description}>
+  <section class="border-b border-line bg-paper">
+    <div class="max-w-3xl mx-auto px-6 pt-20 pb-16 sm:pt-28 sm:pb-20">
+      <div class="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent-strong mb-7">
+        <span class="size-1.5 rounded-full bg-accent"></span>
+        Open source · One static Go binary · MIT
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight text-ink leading-[1.1] mb-6">
+        A coding agent for your terminal.
+        <br class="hidden sm:block" />
+        <span class="text-accent">On any model.</span>
+      </h1>
+      <p class="text-lg sm:text-xl text-ink-soft leading-relaxed max-w-2xl mb-10">
+        <strong class="text-ink font-medium">glue</strong> is an interactive
+        coding agent — and a headless one for cron and CI. Gemini first-class,
+        your ChatGPT subscription via Codex, or open-weight models through
+        OpenRouter and NVIDIA. Permission-gated tools, an autonomous goal
+        loop, and no runtime to install.
+      </p>
+      <div class="flex flex-wrap items-center gap-3 mb-8">
+        <a
+          href="https://github.com/erain/glue#the-glue-cli"
+          class="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-strong transition-colors"
+          rel="noopener"
+        >
+          Get started
+          <span aria-hidden="true">→</span>
+        </a>
+        <a
+          href="https://github.com/erain/glue"
+          class="inline-flex items-center gap-2 rounded-md border border-line px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink hover:border-ink-soft transition-colors"
+          rel="noopener"
+        >
+          View on GitHub
+        </a>
+      </div>
+      <pre class="text-sm"><code>{installSnippet}</code></pre>
+      <div class="text-xs text-ink-muted tracking-wide mt-6">
+        Gemini · ChatGPT subscription (Codex) · OpenRouter open-weights · NVIDIA build · goal loop · TUI + headless
+      </div>
+    </div>
+  </section>
+
+  <Section num="01" id="what" eyebrow="What it is" title="The coding agent that doesn't pick your model.">
+    <p>
+      Most coding agents are a front-end for one vendor. glue is the
+      harness: an interactive TUI, a permission-gated local tool set
+      (<code>read_file</code>, <code>edit_file</code>, <code>grep</code>,
+      <code>shell_exec</code>, git helpers, …), and an agent loop that runs
+      the same way on every provider it ships —
+      <strong>Gemini</strong> as the primary target, <strong>Codex</strong>
+      against your existing ChatGPT subscription, and
+      <strong>open-weight models</strong> (Kimi K2, Qwen, GLM, DeepSeek)
+      through OpenRouter or NVIDIA build.
+    </p>
+    <p>
+      It installs as one static Go binary. No Node, no Python, no Docker —
+      <code>go install</code> and you're coding.
+    </p>
+    <p>
+      Under the hood it's the reference consumer of the
+      <a href="https://glue-framework-site.vercel.app" rel="noopener">glue agent framework</a>:
+      the coding tool bundle, the loop, sessions, and permissions are all
+      library API you can reuse in your own agents
+      (<a href="https://github.com/erain/glue/blob/main/docs/adr/0012-sdk-coding-agent-peggy-boundary.md" rel="noopener">ADR-0012</a>).
+    </p>
+  </Section>
+
+  <Section num="02" id="tui" tone="soft" eyebrow="Interactive" title="A TUI that stays out of the way.">
+    <pre><code>{tuiTranscript}</code></pre>
+    <div class="cap-grid mt-8">
+      {tuiFeatures.map((c) => (
+        <div class="cap-card">
+          <h3>{c.title}</h3>
+          <p set:html={c.body}></p>
+        </div>
+      ))}
+    </div>
+    <p class="mt-8">
+      Run <code>glue run --coding --work .</code> in a terminal and the TUI
+      opens by default. Designed in
+      <a href="https://github.com/erain/glue/blob/main/docs/adr/0014-coding-agent-tui.md" rel="noopener">ADR-0014</a>
+      and <a href="https://github.com/erain/glue/blob/main/docs/adr/0015-session-tree.md" rel="noopener">ADR-0015</a>.
+    </p>
+  </Section>
+
+  <Section num="03" id="goal" eyebrow="Autonomous" title="The goal loop: plan, make, verify — repeat.">
+    <p>
+      <code>/goal</code> in the TUI (or <code>glue goal</code> headless)
+      turns one objective into an autonomous loop: a planner decomposes it
+      into a verifiable checklist, a fresh <strong>maker</strong> session
+      works each iteration, and a separate <strong>checker</strong> session
+      audits the evidence — the writer never grades its own homework.
+      Guardrails bound it: max iterations, no-progress detection, token
+      budget.
+    </p>
+    <pre><code>{goalSnippet}</code></pre>
+    <p>
+      Goals checkpoint to the session store, so they survive restarts and
+      resume from the last verified checklist. <code>--worktree</code> runs
+      the whole loop in an isolated git worktree on branch
+      <code>goal/&lt;id&gt;</code> — your checkout stays untouched and the
+      result is a reviewable branch, never an auto-merge. Status-mapped
+      exit codes make it schedulable from cron, CI, or another agent.
+      Designed in
+      <a href="https://github.com/erain/glue/blob/main/docs/adr/0016-goal-loop.md" rel="noopener">ADR-0016</a>.
+    </p>
+  </Section>
+
+  <Section num="04" id="providers" tone="soft" eyebrow="Models" title="Bring a key, a subscription, or neither.">
+    <div class="cap-grid">
+      {providers.map((c) => (
+        <div class="cap-card">
+          <h3>{c.title}</h3>
+          <p set:html={c.body}></p>
+        </div>
+      ))}
+    </div>
+    <p class="mt-8">
+      Switch with <code>--provider</code> / <code>--model</code>, or
+      mid-session with <code>/model</code>. The harness normalizes
+      streaming, tool calling, and reasoning quirks per provider so the
+      agent behaves the same everywhere.
+    </p>
+  </Section>
+
+  <Section num="05" id="safety" eyebrow="Safety" title="Permission-gated, honestly scoped.">
+    <p>
+      Reads and navigation are free; <code>write_file</code>,
+      <code>edit_file</code>, and <code>shell_exec</code> ask first —
+      inline, in the tool card, with allow-once / allow-for-session /
+      allow-for-file grades. <code>--yolo</code> auto-approves everything
+      for trusted feature branches, and goal runs prefer
+      <code>--worktree</code> isolation so even full autonomy can't touch
+      your checkout.
+    </p>
+    <p>
+      What glue does <em>not</em> claim: a sandbox. Execution is local by
+      design, and the <code>Executor</code> seam is where a
+      container/VM backend plugs in — it's on the
+      <a href="https://github.com/erain/glue/issues/110" rel="noopener">roadmap</a>.
+      The <code>@</code>-mention picker and <code>grep</code> refuse
+      secret-shaped files (<code>.env</code>, keys) on their own.
+    </p>
+  </Section>
+
+  <Section num="06" id="scriptable" tone="soft" eyebrow="Headless" title="Scriptable from day one.">
+    <pre><code>{scriptSnippet}</code></pre>
+    <p>
+      The same binary serves a local HTTP+SSE daemon
+      (<code>glue serve</code> / <code>glue connect</code>) that streams
+      runs and brokers permission prompts to the connected client — the
+      protocol other channels (Telegram, dashboards) build on.
+    </p>
+  </Section>
+
+  <Section num="07" id="stack" eyebrow="Built on glue" title="One project, three faces.">
+    <div class="cap-grid">
+      <div class="cap-card">
+        <h3>The framework</h3>
+        <p>
+          The Go library underneath: provider-agnostic loop, typed tools,
+          stores, MCP, daemon.
+          <a href="https://glue-framework-site.vercel.app" rel="noopener">glue-framework-site.vercel.app</a>
+        </p>
+      </div>
+      <div class="cap-card">
+        <h3>glue-review</h3>
+        <p>
+          A free pre-push branch reviewer that posts one sticky PR comment.
+          <a href="https://glue-review.vercel.app" rel="noopener">glue-review.vercel.app</a>
+        </p>
+      </div>
+      <div class="cap-card">
+        <h3>peggy</h3>
+        <p>
+          A long-running personal assistant: Telegram, durable memory,
+          schedules.
+          <a href="https://github.com/erain/glue/tree/main/agents/peggy" rel="noopener">GitHub</a>
+        </p>
+      </div>
+      <div class="cap-card">
+        <h3>This coding agent</h3>
+        <p>
+          <code>cmd/glue</code> in the same repo — the framework's own
+          daily driver and dogfood.
+          <a href="https://github.com/erain/glue/tree/main/cmd/glue" rel="noopener">Source</a>
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <section id="faq" class="border-b border-line bg-paper-soft">
+    <div class="max-w-3xl mx-auto px-6 py-16 sm:py-20">
+      <div class="flex items-baseline gap-4 mb-3">
+        <span class="section-num">08</span>
+        <span class="text-xs uppercase tracking-wider text-ink-muted">FAQ</span>
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-8 leading-snug">
+        Anticipated questions.
+      </h2>
+      <div class="space-y-7 prose-body text-base sm:text-[17px]">
+        <div>
+          <h3 class="text-ink font-semibold mb-2">How is this different from Claude Code, Codex CLI, or Gemini CLI?</h3>
+          <p>
+            Those are excellent harnesses for one vendor's models. glue is
+            model-agnostic by construction: the same TUI, tools, permission
+            model, and goal loop on Gemini, a ChatGPT subscription, or
+            open-weight models — switchable per session. And the whole
+            agent is library API underneath, so what the binary does, your
+            own Go agent can do too.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-ink font-semibold mb-2">Can I run it for free?</h3>
+          <p>
+            Two honest paths: the Codex provider rides your existing
+            ChatGPT subscription (no per-token bill), and
+            <code>--provider openrouter --model openrouter/free</code>
+            auto-picks a currently-free open-weight model. Expect free
+            models to be slower and less reliable than Gemini.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-ink font-semibold mb-2">Is it sandboxed?</h3>
+          <p>
+            No — and it says so instead of pretending. Side effects are
+            permission-gated, goal runs can be isolated in a git worktree,
+            and the <code>Executor</code> interface is the seam where a
+            container/VM backend will plug in. Until then, treat
+            <code>--yolo</code> like you'd treat any tool with shell access.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-ink font-semibold mb-2">Which model should I use?</h3>
+          <p>
+            Gemini 3.x is the primary target and gets the most harness
+            attention (thought-signature replay, streamed reasoning).
+            Codex is the zero-marginal-cost daily driver if you already
+            pay for ChatGPT. Open-weight models via OpenRouter/NVIDIA are
+            improving fast and are the explicit second target of the
+            harness roadmap.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-ink font-semibold mb-2">Where does it run?</h3>
+          <p>
+            Anywhere a Go binary runs — Linux and macOS terminals today.
+            The TUI needs a real terminal; everything else
+            (<code>--prompt</code>, pipes, <code>--mode json</code>,
+            <code>glue goal</code>, <code>glue serve</code>) is headless.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-ink font-semibold mb-2">API stability?</h3>
+          <p>
+            The CLI surface is stable in practice; the library underneath
+            reserves the right to break API on minor bumps until a
+            deliberate lock — see the
+            <a href="https://github.com/erain/glue/blob/main/docs/adr/0013-pre-1-0-stability-stance.md" rel="noopener">stability stance</a>
+            and <a href="https://github.com/erain/glue/blob/main/CHANGELOG.md" rel="noopener">CHANGELOG</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
