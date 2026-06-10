@@ -62,6 +62,33 @@ const providers = [
   },
 ];
 
+const harnessFeatures = [
+  {
+    title: "Self-repairing edits",
+    body: "Models misquote whitespace, indentation, and smart quotes constantly. <code>edit_file</code> repairs the drift with a deterministic match ladder, reports what it fixed, and echoes the updated lines back.",
+  },
+  {
+    title: "Logs that keep the part that matters",
+    body: "Long build output keeps the first error <em>and</em> the final status (head + tail), with the complete stream spooled to a named temp file the model can read back.",
+  },
+  {
+    title: "Transcript repair",
+    body: "Interrupted turns leave dangling tool calls that providers reject with opaque 400s. Every run repairs the history first — cancel, crash, resume, and model switches just work.",
+  },
+  {
+    title: "Retries + overflow recovery",
+    body: "Rate limits and dropped streams retry with backoff (honoring server hints); a blown context window triggers compact-once-and-retry instead of a dead session.",
+  },
+  {
+    title: "Loop guardrails",
+    body: "Repeating the same tool call, or burning turn after turn on failing calls, draws a corrective nudge first — and a clean typed stop if the model ignores it.",
+  },
+  {
+    title: "Stall recovery",
+    body: "Gemini's classic \u201cI will now edit the file.\u201d-then-silence gets a bounded \u201cPlease continue.\u201d — the narration becomes the action.",
+  },
+];
+
 const tuiFeatures = [
   {
     title: "Tool cards with inline permissions",
@@ -210,13 +237,34 @@ const tuiFeatures = [
     </div>
     <p class="mt-8">
       Switch with <code>--provider</code> / <code>--model</code>, or
-      mid-session with <code>/model</code>. The harness normalizes
-      streaming, tool calling, and reasoning quirks per provider so the
-      agent behaves the same everywhere.
+      mid-session with <code>/model</code>. A per-provider capability
+      registry — context window, parallel-tool safety, prompt variant,
+      stall-proneness — tunes the harness automatically, so the agent
+      behaves the same everywhere without if-this-model-then hacks.
     </p>
   </Section>
 
-  <Section num="05" id="safety" eyebrow="Safety" title="Permission-gated, honestly scoped.">
+  <Section num="05" id="harness" eyebrow="Reliability" title="A harness that absorbs model sloppiness.">
+    <p>
+      Most wasted agent turns come from the harness, not the model: a
+      failed edit match, a truncated log missing the error, an orphaned
+      tool call that kills the next request. glue ports the consensus
+      fixes from
+      <a href="https://github.com/erain/glue/blob/main/docs/coding-harness-roadmap.md" rel="noopener">a source-level analysis</a>
+      of pi, Cline, Codex CLI, and Gemini CLI — tuned for Gemini first
+      and open-weight models second.
+    </p>
+    <div class="cap-grid mt-8">
+      {harnessFeatures.map((c) => (
+        <div class="cap-card">
+          <h3>{c.title}</h3>
+          <p set:html={c.body}></p>
+        </div>
+      ))}
+    </div>
+  </Section>
+
+  <Section num="06" id="safety" tone="soft" eyebrow="Safety" title="Permission-gated, honestly scoped.">
     <p>
       Reads and navigation are free; <code>write_file</code>,
       <code>edit_file</code>, and <code>shell_exec</code> ask first —
@@ -236,7 +284,7 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="06" id="scriptable" tone="soft" eyebrow="Headless" title="Scriptable from day one.">
+  <Section num="07" id="scriptable" tone="soft" eyebrow="Headless" title="Scriptable from day one.">
     <pre><code>{scriptSnippet}</code></pre>
     <p>
       The same binary serves a local HTTP+SSE daemon
@@ -246,7 +294,7 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="07" id="stack" eyebrow="Built on glue" title="One project, three faces.">
+  <Section num="08" id="stack" eyebrow="Built on glue" title="One project, three faces.">
     <div class="cap-grid">
       <div class="cap-card">
         <h3>The framework</h3>
@@ -285,7 +333,7 @@ const tuiFeatures = [
   <section id="faq" class="border-b border-line bg-paper-soft">
     <div class="max-w-3xl mx-auto px-6 py-16 sm:py-20">
       <div class="flex items-baseline gap-4 mb-3">
-        <span class="section-num">08</span>
+        <span class="section-num">09</span>
         <span class="text-xs uppercase tracking-wider text-ink-muted">FAQ</span>
       </div>
       <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-8 leading-snug">
@@ -327,11 +375,12 @@ const tuiFeatures = [
           <h3 class="text-ink font-semibold mb-2">Which model should I use?</h3>
           <p>
             Gemini 3.x is the primary target and gets the most harness
-            attention (thought-signature replay, streamed reasoning).
-            Codex is the zero-marginal-cost daily driver if you already
-            pay for ChatGPT. Open-weight models via OpenRouter/NVIDIA are
-            improving fast and are the explicit second target of the
-            harness roadmap.
+            attention (thought-signature replay, streamed reasoning,
+            stall recovery). Codex is the zero-marginal-cost daily
+            driver if you already pay for ChatGPT. Open-weight models
+            via OpenRouter/NVIDIA are the explicit second target: the
+            v1.13.0 reliability work (self-repairing edits, guardrails,
+            retries) is tuned for exactly their failure modes.
           </p>
         </div>
         <div>
