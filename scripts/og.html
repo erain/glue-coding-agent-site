@@ -3,103 +3,121 @@
 <head>
   <meta charset="utf-8">
   <title>glue code — og</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink: #0f172a;
-      --ink-soft: #475569;
-      --ink-muted: #94a3b8;
-      --line: #e2e8f0;
-      --line-soft: #f1f5f9;
-      --paper: #ffffff;
-      --accent: #047857;
-      --accent-soft: #d1fae5;
-      --accent-strong: #065f46;
+      --ink: #c3d2c3;
+      --ink-soft: #91a691;
+      --ink-muted: #5c715c;
+      --line: #1d2a1d;
+      --paper: #0a0e0a;
+      --accent: #4af28a;
+      --amber: #f0b35e;
     }
     *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
     body {
       width: 1200px;
       height: 630px;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
+      font-family: "JetBrains Mono", ui-monospace, "SF Mono", "Menlo", Consolas, monospace;
       color: var(--ink);
-      background: var(--paper);
+      background:
+        radial-gradient(900px 420px at 50% -100px, rgba(74, 242, 138, 0.10), transparent 70%),
+        var(--paper);
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
       overflow: hidden;
+      position: relative;
+    }
+    /* scanlines */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg,
+        rgba(0,0,0,0.16) 0px, rgba(0,0,0,0.16) 1px,
+        transparent 1px, transparent 3px);
+      opacity: 0.45;
     }
     .card {
       width: 100%;
       height: 100%;
-      padding: 72px 80px;
+      padding: 64px 80px;
       display: grid;
       grid-template-rows: auto 1fr auto;
       position: relative;
     }
-    .corner {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 320px;
-      height: 320px;
-      background: radial-gradient(circle at 100% 0%, var(--accent-soft) 0%, transparent 60%);
-      pointer-events: none;
+    .ascii {
+      margin: 0 0 8px;
+      color: var(--accent);
+      text-shadow: 0 0 26px rgba(74, 242, 138, 0.45);
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 600;
+      white-space: pre;
     }
     .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 16px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: var(--accent-strong);
       font-size: 18px;
-      font-weight: 500;
-      letter-spacing: 0.02em;
+      color: var(--ink-muted);
+      letter-spacing: 0.04em;
+      margin-top: 14px;
     }
-    .chip .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--accent);
-    }
+    .chip .b { color: var(--accent); }
     h1 {
-      font-size: 84px;
-      line-height: 1.05;
-      font-weight: 600;
+      font-size: 62px;
+      line-height: 1.15;
+      font-weight: 700;
       letter-spacing: -0.02em;
-      margin: 32px 0 24px;
+      margin: 26px 0 22px;
       color: var(--ink);
     }
-    h1 .accent { color: var(--accent); }
+    h1 .accent {
+      color: var(--accent);
+      text-shadow: 0 0 30px rgba(74, 242, 138, 0.45);
+    }
     p.lede {
-      font-size: 28px;
-      line-height: 1.4;
+      font-size: 24px;
+      line-height: 1.5;
       color: var(--ink-soft);
-      max-width: 900px;
+      max-width: 980px;
       margin: 0;
     }
     .footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 20px;
+      font-size: 19px;
       color: var(--ink-muted);
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
     }
-    .footer .brand {
-      color: var(--ink);
-      font-weight: 600;
-    }
-    .footer .stack {
-      letter-spacing: 0.04em;
+    .footer .brand { color: var(--ink); font-weight: 600; }
+    .footer .brand .p { color: var(--accent); }
+    .footer .stack { letter-spacing: 0.04em; }
+    .cursor {
+      display: inline-block;
+      width: 0.55em;
+      height: 1.05em;
+      vertical-align: text-bottom;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(74, 242, 138, 0.7);
     }
   </style>
 </head>
 <body>
   <div class="card">
-    <div class="corner"></div>
     <div>
-      <div class="chip"><span class="dot"></span>Open source · One static Go binary · MIT</div>
-      <h1>A coding agent for your terminal.<br><span class="accent">On any model.</span></h1>
+      <pre class="ascii">       _
+  __ _| |_   _  ___
+ / _` | | | | |/ _ \
+| (_| | | |_| |  __/
+ \__, |_|\__,_|\___|
+ |___/</pre>
+      <div class="chip"><span class="b">[</span> open source · one static go binary · MIT <span class="b">]</span></div>
+      <h1>A coding agent for your terminal.<br><span class="accent">On any model.</span><span class="cursor"></span></h1>
       <p class="lede">
         Interactive TUI, permission-gated tools, autonomous goal loop —
         on Gemini, your ChatGPT subscription, or open-weight models.
@@ -107,8 +125,8 @@
     </div>
     <div></div>
     <div class="footer">
-      <div class="brand">glue <span style="color: var(--accent); font-weight: 600;">code</span></div>
-      <div class="stack">Gemini · Codex · OpenRouter · NVIDIA · goal loop · TUI</div>
+      <div class="brand"><span class="p">$</span> glue <span class="p">--coding</span></div>
+      <div class="stack">gemini · codex · openrouter · nvidia · goal loop · tui</div>
     </div>
   </div>
 </body>

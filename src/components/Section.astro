@@ -12,14 +12,14 @@ const bg = tone === "soft" ? "bg-paper-soft" : "bg-paper";
 ---
 <section id={id} class={`border-b border-line ${bg}`}>
   <div class="max-w-3xl mx-auto px-6 py-16 sm:py-20">
-    <div class="flex items-baseline gap-4 mb-3">
-      <span class="section-num">{num}</span>
-      {eyebrow && <span class="text-xs uppercase tracking-wider text-ink-muted">{eyebrow}</span>}
+    <div class="flex items-baseline gap-3 mb-3">
+      <span class="section-num">[0x{num}]</span>
+      {eyebrow && <span class="text-xs tracking-wider text-ink-muted">{`// ${eyebrow.toLowerCase()}`}</span>}
     </div>
-    <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-6 leading-snug">
-      {title}
+    <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-ink mb-6 leading-snug">
+      <span class="text-accent" aria-hidden="true">#</span> {title}
     </h2>
-    <div class="prose-body text-base sm:text-[17px]">
+    <div class="prose-body text-[15px] sm:text-base">
       <slot />
     </div>
   </div>

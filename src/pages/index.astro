@@ -6,43 +6,6 @@ const title = "glue — a coding agent for your terminal, on any model";
 const description =
   "glue is an open-source terminal coding agent in one static Go binary. Interactive TUI, permission-gated tools, autonomous goal loop, headless CI mode. Runs on Gemini, your ChatGPT subscription (Codex), or open-weight models via OpenRouter and NVIDIA.";
 
-const installSnippet = `go install github.com/erain/glue/cmd/glue@latest
-
-# interactive coding agent in the current repo
-export GEMINI_API_KEY=...
-glue run --coding --work .`;
-
-const tuiTranscript = `▶ edit_file  internal/server/router.go
-    - mux.Handle("/healthz", health)
-    + mux.Handle("/healthz", logged(health))
-    [a]llow once   [s]ession   [t]his file   [n]o
-
-⠸ shell_exec  go test ./internal/server/
-
-  All 14 tests pass. The health endpoint now logs
-  requests like every other route.
-
-› fix the flaky TestRetryBackoff next_`;
-
-const goalSnippet = `# pursue a goal autonomously: plan → make → verify, per iteration
-glue goal --coding --yolo --worktree \\
-  "Make golangci-lint pass on ./... without disabling checks"
-
-# exit code reflects the outcome:
-# 0 achieved · 2 blocked · 3 max-iterations · 4 budget · 1 error
-
-glue goal --list      # stored goals with status and age
-glue goal --resume    # continue from the verified checklist`;
-
-const scriptSnippet = `# one-shot
-glue run --coding --prompt "Run the tests, fix the first failure."
-
-# pipe a prompt in
-git diff main | glue run --prompt "Review this diff for bugs."
-
-# stable JSONL events for scripting
-glue run --coding --mode json --prompt "..." | jq -r '.type'`;
-
 const providers = [
   {
     title: "Gemini (primary)",
@@ -85,7 +48,7 @@ const harnessFeatures = [
   },
   {
     title: "Stall recovery",
-    body: "Gemini's classic \u201cI will now edit the file.\u201d-then-silence gets a bounded \u201cPlease continue.\u201d — the narration becomes the action.",
+    body: "Gemini's classic “I will now edit the file.”-then-silence gets a bounded “Please continue.” — the narration becomes the action.",
   },
 ];
 
@@ -118,44 +81,56 @@ const tuiFeatures = [
 ---
 
 <Base title={title} description={description}>
-  <section class="border-b border-line bg-paper">
-    <div class="max-w-3xl mx-auto px-6 pt-20 pb-16 sm:pt-28 sm:pb-20">
-      <div class="inline-flex items-center gap-2 rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent-strong mb-7">
-        <span class="size-1.5 rounded-full bg-accent"></span>
-        Open source · One static Go binary · MIT
+  <section class="border-b border-line">
+    <div class="max-w-3xl mx-auto px-6 pt-16 pb-16 sm:pt-20 sm:pb-20">
+      <pre class="ascii-logo mb-8" aria-hidden="true">
+       _
+  __ _| |_   _  ___
+ / _` | | | | |/ _ \
+| (_| | | |_| |  __/
+ \__, |_|\__,_|\___|
+ |___/</pre>
+      <div class="text-xs text-ink-muted tracking-wider mb-6">
+        <span class="text-accent">[</span> open source <span class="text-accent">·</span> one static go binary <span class="text-accent">·</span> MIT <span class="text-accent">]</span>
       </div>
-      <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight text-ink leading-[1.1] mb-6">
+      <h1 class="text-3xl sm:text-[2.6rem] font-bold tracking-tight text-ink leading-[1.15] mb-6">
         A coding agent for your terminal.
         <br class="hidden sm:block" />
-        <span class="text-accent">On any model.</span>
+        <span class="glow">On any model.</span>
       </h1>
-      <p class="text-lg sm:text-xl text-ink-soft leading-relaxed max-w-2xl mb-10">
-        <strong class="text-ink font-medium">glue</strong> is an interactive
+      <p class="text-base sm:text-lg text-ink-soft leading-relaxed max-w-2xl mb-10">
+        <strong class="text-ink font-semibold">glue</strong> is an interactive
         coding agent — and a headless one for cron and CI. Gemini first-class,
         your ChatGPT subscription via Codex, or open-weight models through
         OpenRouter and NVIDIA. Permission-gated tools, an autonomous goal
         loop, and no runtime to install.
       </p>
-      <div class="flex flex-wrap items-center gap-3 mb-8">
-        <a
-          href="https://github.com/erain/glue#the-glue-cli"
-          class="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-strong transition-colors"
-          rel="noopener"
-        >
-          Get started
-          <span aria-hidden="true">→</span>
+      <div class="flex flex-wrap items-center gap-3 mb-10">
+        <a href="https://github.com/erain/glue#the-glue-cli" class="btn btn-solid" rel="noopener">
+          [ get started ]
         </a>
-        <a
-          href="https://github.com/erain/glue"
-          class="inline-flex items-center gap-2 rounded-md border border-line px-4 py-2.5 text-sm font-medium text-ink-soft hover:text-ink hover:border-ink-soft transition-colors"
-          rel="noopener"
-        >
-          View on GitHub
+        <a href="https://github.com/erain/glue" class="btn btn-ghost" rel="noopener">
+          [ view source ]
         </a>
       </div>
-      <pre class="text-sm"><code>{installSnippet}</code></pre>
+      <div class="term">
+        <div class="term-bar">
+          <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+          <span class="term-title">koheii@dev: ~/src/yourrepo</span>
+        </div>
+        <pre class="term-body"><code><span class="tok-g">$</span> go install github.com/erain/glue/cmd/glue@latest
+<span class="tok-g">$</span> export GEMINI_API_KEY=<span class="tok-d">...</span>
+<span class="tok-g">$</span> glue run <span class="tok-a">--coding</span> <span class="tok-a">--work</span> .
+
+  <span class="tok-b">glue</span> <span class="tok-d">· no node, no python, no docker</span>
+  <span class="tok-g">✓</span> provider  <span class="tok-c">gemini-3.x</span>     <span class="tok-d">(capability registry loaded)</span>
+  <span class="tok-g">✓</span> tools     read_file edit_file grep shell_exec git_* …
+  <span class="tok-g">✓</span> session   restored <span class="tok-d">·</span> history repaired <span class="tok-d">·</span> 0 orphaned calls
+
+<span class="tok-a">›</span> what should we build?<span class="cursor" aria-hidden="true"></span></code></pre>
+      </div>
       <div class="text-xs text-ink-muted tracking-wide mt-6">
-        Gemini · ChatGPT subscription (Codex) · OpenRouter open-weights · NVIDIA build · goal loop · TUI + headless
+        gemini <span class="text-accent">·</span> chatgpt subscription (codex) <span class="text-accent">·</span> openrouter open-weights <span class="text-accent">·</span> nvidia build <span class="text-accent">·</span> goal loop <span class="text-accent">·</span> tui + headless
       </div>
     </div>
   </section>
@@ -186,7 +161,23 @@ const tuiFeatures = [
   </Section>
 
   <Section num="02" id="tui" tone="soft" eyebrow="Interactive" title="A TUI that stays out of the way.">
-    <pre><code>{tuiTranscript}</code></pre>
+    <div class="term">
+      <div class="term-bar">
+        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+        <span class="term-title">glue · session 4f2a · gemini-3.x</span>
+      </div>
+      <pre class="term-body"><code><span class="tok-g">▶</span> <span class="tok-b">edit_file</span>  internal/server/router.go
+    <span class="tok-r">- mux.Handle("/healthz", health)</span>
+    <span class="tok-g">+ mux.Handle("/healthz", logged(health))</span>
+    <span class="tok-a">[a]llow once   [s]ession   [t]his file   [n]o</span>
+
+<span class="tok-c">⠸</span> <span class="tok-b">shell_exec</span>  go test ./internal/server/
+
+  All 14 tests pass. The health endpoint now logs
+  requests like every other route.
+
+<span class="tok-a">›</span> fix the flaky TestRetryBackoff next<span class="cursor" aria-hidden="true"></span></code></pre>
+    </div>
     <div class="cap-grid mt-8">
       {tuiFeatures.map((c) => (
         <div class="cap-card">
@@ -213,7 +204,15 @@ const tuiFeatures = [
       Guardrails bound it: max iterations, no-progress detection, token
       budget.
     </p>
-    <pre><code>{goalSnippet}</code></pre>
+    <pre><code><span class="tok-d"># pursue a goal autonomously: plan → make → verify, per iteration</span>
+<span class="tok-g">$</span> glue goal <span class="tok-a">--coding --yolo --worktree</span> \
+    <span class="tok-c">"Make golangci-lint pass on ./... without disabling checks"</span>
+
+<span class="tok-d"># exit code reflects the outcome:</span>
+<span class="tok-d">#</span> <span class="tok-g">0</span> achieved <span class="tok-d">·</span> <span class="tok-a">2</span> blocked <span class="tok-d">·</span> <span class="tok-a">3</span> max-iterations <span class="tok-d">·</span> <span class="tok-a">4</span> budget <span class="tok-d">·</span> <span class="tok-r">1</span> error
+
+<span class="tok-g">$</span> glue goal <span class="tok-a">--list</span>      <span class="tok-d"># stored goals with status and age</span>
+<span class="tok-g">$</span> glue goal <span class="tok-a">--resume</span>    <span class="tok-d"># continue from the verified checklist</span></code></pre>
     <p>
       Goals checkpoint to the session store, so they survive restarts and
       resume from the last verified checklist. <code>--worktree</code> runs
@@ -284,8 +283,15 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="07" id="scriptable" tone="soft" eyebrow="Headless" title="Scriptable from day one.">
-    <pre><code>{scriptSnippet}</code></pre>
+  <Section num="07" id="scriptable" eyebrow="Headless" title="Scriptable from day one.">
+    <pre><code><span class="tok-d"># one-shot</span>
+<span class="tok-g">$</span> glue run <span class="tok-a">--coding --prompt</span> <span class="tok-c">"Run the tests, fix the first failure."</span>
+
+<span class="tok-d"># pipe a prompt in</span>
+<span class="tok-g">$</span> git diff main | glue run <span class="tok-a">--prompt</span> <span class="tok-c">"Review this diff for bugs."</span>
+
+<span class="tok-d"># stable JSONL events for scripting</span>
+<span class="tok-g">$</span> glue run <span class="tok-a">--coding --mode</span> json <span class="tok-a">--prompt</span> <span class="tok-c">"..."</span> | jq -r <span class="tok-c">'.type'</span></code></pre>
     <p>
       The same binary serves a local HTTP+SSE daemon
       (<code>glue serve</code> / <code>glue connect</code>) that streams
@@ -294,7 +300,7 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="08" id="stack" eyebrow="Built on glue" title="One project, three faces.">
+  <Section num="08" id="stack" tone="soft" eyebrow="Built on glue" title="One project, three faces.">
     <div class="cap-grid">
       <div class="cap-card">
         <h3>The framework</h3>
@@ -330,18 +336,18 @@ const tuiFeatures = [
     </div>
   </Section>
 
-  <section id="faq" class="border-b border-line bg-paper-soft">
+  <section id="faq" class="border-b border-line bg-paper">
     <div class="max-w-3xl mx-auto px-6 py-16 sm:py-20">
-      <div class="flex items-baseline gap-4 mb-3">
-        <span class="section-num">09</span>
-        <span class="text-xs uppercase tracking-wider text-ink-muted">FAQ</span>
+      <div class="flex items-baseline gap-3 mb-3">
+        <span class="section-num">[0x09]</span>
+        <span class="text-xs tracking-wider text-ink-muted">// faq</span>
       </div>
-      <h2 class="text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-8 leading-snug">
-        Anticipated questions.
+      <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-ink mb-8 leading-snug">
+        <span class="text-accent" aria-hidden="true">#</span> Anticipated questions.
       </h2>
-      <div class="space-y-7 prose-body text-base sm:text-[17px]">
+      <div class="space-y-7 prose-body text-[15px] sm:text-base">
         <div>
-          <h3 class="text-ink font-semibold mb-2">How is this different from Claude Code, Codex CLI, or Gemini CLI?</h3>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> How is this different from Claude Code, Codex CLI, or Gemini CLI?</h3>
           <p>
             Those are excellent harnesses for one vendor's models. glue is
             model-agnostic by construction: the same TUI, tools, permission
@@ -352,7 +358,7 @@ const tuiFeatures = [
           </p>
         </div>
         <div>
-          <h3 class="text-ink font-semibold mb-2">Can I run it for free?</h3>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Can I run it for free?</h3>
           <p>
             Two honest paths: the Codex provider rides your existing
             ChatGPT subscription (no per-token bill), and
@@ -362,7 +368,7 @@ const tuiFeatures = [
           </p>
         </div>
         <div>
-          <h3 class="text-ink font-semibold mb-2">Is it sandboxed?</h3>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Is it sandboxed?</h3>
           <p>
             No — and it says so instead of pretending. Side effects are
             permission-gated, goal runs can be isolated in a git worktree,
@@ -372,7 +378,7 @@ const tuiFeatures = [
           </p>
         </div>
         <div>
-          <h3 class="text-ink font-semibold mb-2">Which model should I use?</h3>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Which model should I use?</h3>
           <p>
             Gemini 3.x is the primary target and gets the most harness
             attention (thought-signature replay, streamed reasoning,
@@ -384,7 +390,7 @@ const tuiFeatures = [
           </p>
         </div>
         <div>
-          <h3 class="text-ink font-semibold mb-2">Where does it run?</h3>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Where does it run?</h3>
           <p>
             Anywhere a Go binary runs — Linux and macOS terminals today.
             The TUI needs a real terminal; everything else
@@ -393,7 +399,7 @@ const tuiFeatures = [
           </p>
         </div>
         <div>
-          <h3 class="text-ink font-semibold mb-2">API stability?</h3>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> API stability?</h3>
           <p>
             The CLI surface is stable in practice; the library underneath
             reserves the right to break API on minor bumps until a

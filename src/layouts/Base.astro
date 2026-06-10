@@ -17,6 +17,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://glue-coding
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={canonical} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
@@ -32,37 +35,48 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://glue-coding
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <meta name="twitter:image:alt" content="glue — a coding agent for your terminal, on any model." />
+<!--
+
+       _
+  __ _| |_   _  ___
+ / _` | | | | |/ _ \
+| (_| | | |_| |  __/
+ \__, |_|\__,_|\___|
+ |___/
+
+ you read page sources. you'll like this:
+ $ go install github.com/erain/glue/cmd/glue@latest
+
+-->
   </head>
   <body class="min-h-screen flex flex-col">
-    <header class="border-b border-line bg-paper">
-      <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="/" class="text-ink font-medium tracking-tight">glue<span class="text-accent"> code</span></a>
-        <nav class="flex items-center gap-6 text-sm text-ink-soft">
-          <a href="#tui" class="hover:text-ink">TUI</a>
-          <a href="#goal" class="hover:text-ink">Goal loop</a>
-          <a href="#providers" class="hover:text-ink">Models</a>
-          <a href="#harness" class="hover:text-ink">Harness</a>
-          <a href="https://github.com/erain/glue" class="hover:text-ink" rel="noopener">GitHub</a>
+    <header class="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
+      <div class="max-w-3xl mx-auto px-6 py-3.5 flex items-center justify-between text-sm">
+        <a href="/" class="text-ink font-semibold tracking-tight whitespace-nowrap mr-4">
+          <span class="text-accent">$</span> glue<span class="text-ink-muted hidden sm:inline"> --coding</span><span class="hidden sm:inline" aria-hidden="true"><span class="cursor" style="width:0.5em;height:1em"></span></span>
+        </a>
+        <nav class="flex items-center gap-4 sm:gap-5 text-[13px] text-ink-soft">
+          <a href="#tui" class="hover:text-accent-strong">/tui</a>
+          <a href="#goal" class="hover:text-accent-strong">/goal</a>
+          <a href="#providers" class="hover:text-accent-strong">/models</a>
+          <a href="#harness" class="hover:text-accent-strong">/harness</a>
+          <a href="https://github.com/erain/glue" class="hover:text-accent-strong" rel="noopener">[gh]</a>
         </nav>
       </div>
     </header>
     <main class="flex-1">
       <slot />
     </main>
-    <footer class="border-t border-line mt-24">
-      <div class="max-w-3xl mx-auto px-6 py-10 text-sm text-ink-soft flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <a href="https://github.com/erain/glue" class="text-ink-soft hover:text-ink" rel="noopener">glue</a>
-          {" · "}
-          <a href="https://glue-framework-site.vercel.app" class="text-ink-soft hover:text-ink" rel="noopener">Framework</a>
-          {" · "}
-          <a href="https://glue-review.vercel.app" class="text-ink-soft hover:text-ink" rel="noopener">glue-review</a>
-          {" · "}
-          <a href="https://github.com/erain/glue/blob/main/CHANGELOG.md" class="text-ink-soft hover:text-ink" rel="noopener">Changelog</a>
-          {" · "}
-          MIT
+    <footer class="mt-24 border-t border-line bg-line-soft">
+      <div class="max-w-3xl mx-auto px-6 py-3 text-[13px] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div class="flex items-center gap-0 overflow-x-auto whitespace-nowrap">
+          <span class="bg-accent text-[#04130a] font-semibold px-2 py-0.5">glue</span>
+          <span class="text-ink-muted px-2">0:<a href="https://github.com/erain/glue" class="hover:text-accent-strong" rel="noopener">repo</a></span>
+          <span class="text-ink-muted px-2">1:<a href="https://glue-framework-site.vercel.app" class="hover:text-accent-strong" rel="noopener">framework</a></span>
+          <span class="text-ink-muted px-2">2:<a href="https://glue-review.vercel.app" class="hover:text-accent-strong" rel="noopener">review</a></span>
+          <span class="text-ink-muted px-2">3:<a href="https://github.com/erain/glue/blob/main/CHANGELOG.md" class="hover:text-accent-strong" rel="noopener">changelog</a></span>
         </div>
-        <div class="text-ink-muted">The glue framework&rsquo;s own daily driver.</div>
+        <div class="text-ink-muted whitespace-nowrap">[MIT] the framework's own daily driver</div>
       </div>
     </footer>
   </body>
