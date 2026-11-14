@@ -56,7 +56,7 @@ Vercel auto-detects Astro. To wire it up the first time:
 Every push to `main` auto-deploys. PRs get preview URLs.
 
 Set `ASTRO_SITE` at deploy time if a custom domain lands. The default
-`astro.config.mjs` site is `https://glue-coding-agent-site.vercel.app`.
+`astro.config.mjs` site is `https://glue-coding.vercel.app`.
 
 ## OG image
 
