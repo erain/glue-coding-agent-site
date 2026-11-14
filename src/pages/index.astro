@@ -4,12 +4,39 @@ import Section from "../components/Section.astro";
 
 const title = "glue — a coding agent for your terminal, on any model";
 const description =
-  "glue is an open-source terminal coding agent in one static Go binary. Interactive TUI, permission-gated tools, autonomous goal loop, headless CI mode. Runs on Gemini, your ChatGPT subscription (Codex), or open-weight models via OpenRouter and NVIDIA.";
+  "glue is an open-source coding agent in one static Go binary. Interactive TUI, permission-gated tools, autonomous goal loop, headless CI mode — and remote jobs in AX sandboxes you can hand off, steer from your phone, and pull back as tested code. Runs on Gemini, your ChatGPT subscription (Codex), DeepSeek, or open-weight models via OpenRouter and NVIDIA.";
+
+const remoteFeatures = [
+  {
+    title: "Your work, not origin's",
+    body: "Jobs start from your current branch. Unpushed work? glue refuses rather than silently work on different code — or <code>--snapshot</code> sends the working tree as it is.",
+  },
+  {
+    title: "Asks instead of guessing",
+    body: "When the repo contradicts the task or a decision is yours, the agent asks. Answer with <code>glue job answer</code>, inline in <code>attach</code>, or from the web UI on your phone.",
+  },
+  {
+    title: "Steer mid-run",
+    body: "<code>glue job say</code> lands at the next step; <code>--interrupt</code> stops the current model call or command and redirects it now.",
+  },
+  {
+    title: "Several tries at once",
+    body: "<code>--attempts 3</code> (and repeated <code>--model</code>) runs attempts in parallel; <code>glue job compare</code> lines them up and <code>pick</code> keeps the best as a draft PR.",
+  },
+  {
+    title: "Issues in, PRs out",
+    body: "<code>--issue 123</code> starts from a GitHub issue; the draft PR closes it. <code>glue job continue --from-pr</code> sends review comments and failed checks back to the job.",
+  },
+  {
+    title: "From the TUI",
+    body: "<code>/remote</code> hands off the task with your session as context; <code>/jobs</code> shows status, a live transcript, and pulls results without leaving the session.",
+  },
+];
 
 const providers = [
   {
     title: "Gemini (primary)",
-    body: "Google's genai SDK with first-class Gemini 3.x support — thought-signature round-tripping, streamed reasoning, API-version pinning. <code>GEMINI_API_KEY</code> and go.",
+    body: "Google's genai SDK with first-class Gemini 3.x support — thought-signature round-tripping, streamed reasoning, API-version pinning. Coding defaults to <code>gemini-3-flash-preview</code> at low thinking: about one second per turn. <code>GEMINI_API_KEY</code> and go.",
   },
   {
     title: "Codex — your ChatGPT subscription",
@@ -18,6 +45,10 @@ const providers = [
   {
     title: "OpenRouter — open-weight models",
     body: "Kimi K2, Qwen, GLM, DeepSeek and friends by name — or <code>openrouter/free</code>, which auto-picks a currently-free model.",
+  },
+  {
+    title: "DeepSeek",
+    body: "Native DeepSeek API via <code>DEEPSEEK_API_KEY</code>, with its thinking levels mapped like every other provider's.",
   },
   {
     title: "NVIDIA build + failover",
@@ -100,14 +131,18 @@ const tuiFeatures = [
       </h1>
       <p class="text-base sm:text-lg text-ink-soft leading-relaxed max-w-2xl mb-10">
         <strong class="text-ink font-semibold">glue</strong> is an interactive
-        coding agent — and a headless one for cron and CI. Gemini first-class,
-        your ChatGPT subscription via Codex, or open-weight models through
-        OpenRouter and NVIDIA. Permission-gated tools, an autonomous goal
-        loop, and no runtime to install.
+        coding agent — and a headless one for cron and CI — that can hand a
+        task to a remote sandbox while you close the laptop. Gemini
+        first-class, your ChatGPT subscription via Codex, DeepSeek, or
+        open-weight models through OpenRouter and NVIDIA. Permission-gated
+        tools, an autonomous goal loop, and no runtime to install.
       </p>
       <div class="flex flex-wrap items-center gap-3 mb-10">
         <a href="https://github.com/erain/glue#the-glue-cli" class="btn btn-solid" rel="noopener">
           [ get started ]
+        </a>
+        <a href="https://github.com/erain/glue/blob/main/docs/remote-quickstart.md" class="btn btn-ghost" rel="noopener">
+          [ remote in 5 min ]
         </a>
         <a href="https://github.com/erain/glue" class="btn btn-ghost" rel="noopener">
           [ view source ]
@@ -130,7 +165,7 @@ const tuiFeatures = [
 <span class="tok-a">›</span> what should we build?<span class="cursor" aria-hidden="true"></span></code></pre>
       </div>
       <div class="text-xs text-ink-muted tracking-wide mt-6">
-        gemini <span class="text-accent">·</span> chatgpt subscription (codex) <span class="text-accent">·</span> openrouter open-weights <span class="text-accent">·</span> nvidia build <span class="text-accent">·</span> goal loop <span class="text-accent">·</span> tui + headless
+        gemini <span class="text-accent">·</span> chatgpt subscription (codex) <span class="text-accent">·</span> deepseek <span class="text-accent">·</span> openrouter open-weights <span class="text-accent">·</span> nvidia build <span class="text-accent">·</span> goal loop <span class="text-accent">·</span> remote ax sandboxes <span class="text-accent">·</span> tui + headless
       </div>
     </div>
   </section>
@@ -143,8 +178,8 @@ const tuiFeatures = [
       <code>shell_exec</code>, git helpers, …), and an agent loop that runs
       the same way on every provider it ships —
       <strong>Gemini</strong> as the primary target, <strong>Codex</strong>
-      against your existing ChatGPT subscription, and
-      <strong>open-weight models</strong> (Kimi K2, Qwen, GLM, DeepSeek)
+      against your existing ChatGPT subscription, <strong>DeepSeek</strong>
+      natively, and <strong>open-weight models</strong> (Kimi K2, Qwen, GLM)
       through OpenRouter or NVIDIA build.
     </p>
     <p>
@@ -160,7 +195,50 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="02" id="tui" tone="soft" eyebrow="Interactive" title="A TUI that stays out of the way.">
+  <Section num="02" id="remote" tone="soft" eyebrow="Remote" title="Hand it off. Close the laptop. Pull back tested code.">
+    <p>
+      <code>glue --remote</code> sends the task to an isolated
+      <a href="https://github.com/google/ax" rel="noopener">AX</a> sandbox
+      (gVisor) on your cluster. Your uncommitted work goes with it
+      (<code>--snapshot</code>), your phone hears when it&rsquo;s done or
+      needs an answer, and the result lands in your checkout with one
+      command. A job starts in about three seconds.
+    </p>
+    <div class="term">
+      <div class="term-bar">
+        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+        <span class="term-title">erain@dev: ~/src/yourrepo</span>
+      </div>
+      <pre class="term-body"><code><span class="tok-g">$</span> glue job doctor
+  <span class="tok-g">ok</span>  ax connection  tunnels up, router credentials minted
+  <span class="tok-g">ok</span>  task image     ghcr.io/erain/glue-task@sha256:309f… <span class="tok-d">(published)</span>
+  <span class="tok-g">ok</span>  github token   from gh auth token, can push
+<span class="tok-g">$</span> glue <span class="tok-a">--remote</span> <span class="tok-c">"Add Sub(a, b int) next to Add, with a table-driven test"</span> \
+    <span class="tok-a">--snapshot --attempts 2 --verify</span> <span class="tok-c">"go test ./..."</span> <span class="tok-a">--notify</span> https://ntfy.sh/<span class="tok-d">&lt;topic&gt;</span>
+  <span class="tok-d">submitted 2 jobs in 6.0s · group grp-feb93e9dc9ca</span>
+<span class="tok-g">$</span> glue job compare grp-feb93e9dc9ca
+  job-f8a57d276fb8  achieved  <span class="tok-g">pass</span>  2 files +38 -0  2m50s
+  job-cf7e5e72a8c4  achieved  <span class="tok-g">pass</span>  2 files +28 -0  2m58s
+<span class="tok-g">$</span> glue job pull job-f8a57d276fb8 <span class="tok-a">--apply</span> &amp;&amp; go test ./...
+  ok  example.com/sandbox  0.002s</code></pre>
+    </div>
+    <div class="cap-grid mt-8">
+      {remoteFeatures.map((c) => (
+        <div class="cap-card">
+          <h3>{c.title}</h3>
+          <p set:html={c.body}></p>
+        </div>
+      ))}
+    </div>
+    <p class="mt-8">
+      Start with the
+      <a href="https://github.com/erain/glue/blob/main/docs/remote-quickstart.md" rel="noopener">five-minute quickstart</a>;
+      <code>scripts/demo/aha.sh</code> runs that exact story against a live
+      cluster and fails on any miss.
+    </p>
+  </Section>
+
+  <Section num="03" id="tui" eyebrow="Interactive" title="A TUI that stays out of the way.">
     <div class="term">
       <div class="term-bar">
         <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
@@ -194,7 +272,7 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="03" id="goal" eyebrow="Autonomous" title="The goal loop: plan, make, verify — repeat.">
+  <Section num="04" id="goal" tone="soft" eyebrow="Autonomous" title="The goal loop: plan, make, verify — repeat.">
     <p>
       <code>/goal</code> in the TUI (or <code>glue goal</code> headless)
       turns one objective into an autonomous loop: a planner decomposes it
@@ -225,7 +303,7 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="04" id="providers" tone="soft" eyebrow="Models" title="Bring a key, a subscription, or neither.">
+  <Section num="05" id="providers" eyebrow="Models" title="Bring a key, a subscription, or neither.">
     <div class="cap-grid">
       {providers.map((c) => (
         <div class="cap-card">
@@ -243,7 +321,7 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="05" id="harness" eyebrow="Reliability" title="A harness that absorbs model sloppiness.">
+  <Section num="06" id="harness" tone="soft" eyebrow="Reliability" title="A harness that absorbs model sloppiness.">
     <p>
       Most wasted agent turns come from the harness, not the model: a
       failed edit match, a truncated log missing the error, an orphaned
@@ -263,7 +341,7 @@ const tuiFeatures = [
     </div>
   </Section>
 
-  <Section num="06" id="safety" tone="soft" eyebrow="Safety" title="Permission-gated, honestly scoped.">
+  <Section num="07" id="safety" eyebrow="Safety" title="Permission-gated, honestly scoped.">
     <p>
       Reads and navigation are free; <code>write_file</code>,
       <code>edit_file</code>, and <code>shell_exec</code> ask first —
@@ -274,16 +352,17 @@ const tuiFeatures = [
       your checkout.
     </p>
     <p>
-      What glue does <em>not</em> claim: a sandbox. Execution is local by
-      design, and the <code>Executor</code> seam is where a
-      container/VM backend plugs in — it's on the
-      <a href="https://github.com/erain/glue/issues/110" rel="noopener">roadmap</a>.
-      The <code>@</code>-mention picker and <code>grep</code> refuse
+      Local runs are not sandboxed — glue says so instead of pretending.
+      For isolation, run the job remotely: <code>glue --remote</code> executes
+      in an AX sandbox (gVisor) with a default-deny egress allowlist, the
+      agent&rsquo;s shell commands don&rsquo;t get your GitHub token, and the planner and checker get
+      read-only tools so they can&rsquo;t rewrite the work they audit. The
+      <code>@</code>-mention picker and <code>grep</code> refuse
       secret-shaped files (<code>.env</code>, keys) on their own.
     </p>
   </Section>
 
-  <Section num="07" id="scriptable" eyebrow="Headless" title="Scriptable from day one.">
+  <Section num="08" id="scriptable" tone="soft" eyebrow="Headless" title="Scriptable from day one.">
     <pre><code><span class="tok-d"># one-shot</span>
 <span class="tok-g">$</span> glue run <span class="tok-a">--coding --prompt</span> <span class="tok-c">"Run the tests, fix the first failure."</span>
 
@@ -300,7 +379,7 @@ const tuiFeatures = [
     </p>
   </Section>
 
-  <Section num="08" id="stack" tone="soft" eyebrow="Built on glue" title="One project, three faces.">
+  <Section num="09" id="stack" eyebrow="Built on glue" title="One project, three faces.">
     <div class="cap-grid">
       <div class="cap-card">
         <h3>The framework</h3>
@@ -318,18 +397,10 @@ const tuiFeatures = [
         </p>
       </div>
       <div class="cap-card">
-        <h3>peggy</h3>
-        <p>
-          A long-running personal assistant: Telegram, durable memory,
-          schedules.
-          <a href="https://github.com/erain/glue/tree/main/agents/peggy" rel="noopener">GitHub</a>
-        </p>
-      </div>
-      <div class="cap-card">
         <h3>This coding agent</h3>
         <p>
           <code>cmd/glue</code> in the same repo — the framework's own
-          daily driver and dogfood.
+          daily driver, locally and on AX.
           <a href="https://github.com/erain/glue/tree/main/cmd/glue" rel="noopener">Source</a>
         </p>
       </div>
@@ -339,7 +410,7 @@ const tuiFeatures = [
   <section id="faq" class="border-b border-line bg-paper">
     <div class="max-w-3xl mx-auto px-6 py-16 sm:py-20">
       <div class="flex items-baseline gap-3 mb-3">
-        <span class="section-num">[0x09]</span>
+        <span class="section-num">[0x0A]</span>
         <span class="text-xs tracking-wider text-ink-muted">// faq</span>
       </div>
       <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-ink mb-8 leading-snug">
@@ -370,11 +441,13 @@ const tuiFeatures = [
         <div>
           <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Is it sandboxed?</h3>
           <p>
-            No — and it says so instead of pretending. Side effects are
-            permission-gated, goal runs can be isolated in a git worktree,
-            and the <code>Executor</code> interface is the seam where a
-            container/VM backend will plug in. Until then, treat
-            <code>--yolo</code> like you'd treat any tool with shell access.
+            Local runs: no — side effects are permission-gated and goal runs
+            can be isolated in a git worktree, but treat <code>--yolo</code>
+            like any tool with shell access. Remote runs: yes —
+            <code>glue --remote</code> executes in an
+            <a href="https://github.com/google/ax" rel="noopener">AX</a>
+            sandbox (gVisor) with an egress allowlist, and delivers a branch
+            or draft PR instead of touching your checkout.
           </p>
         </div>
         <div>
@@ -396,6 +469,10 @@ const tuiFeatures = [
             The TUI needs a real terminal; everything else
             (<code>--prompt</code>, pipes, <code>--mode json</code>,
             <code>glue goal</code>, <code>glue serve</code>) is headless.
+            Remote jobs need an AX cluster in your Kubernetes context (a
+            local kind cluster works: <code>scripts/ax-dev/up.sh</code>) and
+            use a published task image with Go, Node.js, Python and a C
+            toolchain — nothing to build.
           </p>
         </div>
         <div>
