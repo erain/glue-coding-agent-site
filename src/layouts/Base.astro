@@ -53,13 +53,15 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://glue-coding
     <header class="sticky top-0 z-40 border-b border-line bg-paper/85 backdrop-blur">
       <div class="max-w-3xl mx-auto px-6 py-3.5 flex items-center justify-between text-sm">
         <a href="/" class="text-ink font-semibold tracking-tight whitespace-nowrap mr-4">
-          <span class="text-accent">$</span> glue<span class="text-ink-muted hidden sm:inline"> --coding</span><span class="hidden sm:inline" aria-hidden="true"><span class="cursor" style="width:0.5em;height:1em"></span></span>
+          <span class="text-accent">$</span> glue<span class="hidden sm:inline" aria-hidden="true"><span class="cursor" style="width:0.5em;height:1em"></span></span>
         </a>
-        <nav class="flex items-center gap-4 sm:gap-5 text-[13px] text-ink-soft">
+        <nav class="flex items-center gap-3.5 sm:gap-5 text-[13px] text-ink-soft overflow-x-auto">
+          <a href="#remote" class="hover:text-accent-strong">/remote</a>
+          <a href="#anywhere" class="hover:text-accent-strong">/anywhere</a>
           <a href="#tui" class="hover:text-accent-strong">/tui</a>
           <a href="#goal" class="hover:text-accent-strong">/goal</a>
+          <a href="#cli" class="hover:text-accent-strong hidden sm:inline">/cli</a>
           <a href="#providers" class="hover:text-accent-strong">/models</a>
-          <a href="#harness" class="hover:text-accent-strong">/harness</a>
           <a href="https://github.com/erain/glue" class="hover:text-accent-strong" rel="noopener">[gh]</a>
         </nav>
       </div>
@@ -72,9 +74,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://glue-coding
         <div class="flex items-center gap-0 overflow-x-auto whitespace-nowrap">
           <span class="bg-accent text-[#04130a] font-semibold px-2 py-0.5">glue</span>
           <span class="text-ink-muted px-2">0:<a href="https://github.com/erain/glue" class="hover:text-accent-strong" rel="noopener">repo</a></span>
-          <span class="text-ink-muted px-2">1:<a href="https://glue-framework-site.vercel.app" class="hover:text-accent-strong" rel="noopener">framework</a></span>
-          <span class="text-ink-muted px-2">2:<a href="https://glue-review.vercel.app" class="hover:text-accent-strong" rel="noopener">review</a></span>
-          <span class="text-ink-muted px-2">3:<a href="https://github.com/erain/glue/blob/main/CHANGELOG.md" class="hover:text-accent-strong" rel="noopener">changelog</a></span>
+          <span class="text-ink-muted px-2">1:<a href="https://github.com/erain/glue/tree/main/docs" class="hover:text-accent-strong" rel="noopener">docs</a></span>
+          <span class="text-ink-muted px-2">2:<a href="https://glue-framework-site.vercel.app" class="hover:text-accent-strong" rel="noopener">framework</a></span>
+          <span class="text-ink-muted px-2">3:<a href="https://glue-review.vercel.app" class="hover:text-accent-strong" rel="noopener">review</a></span>
+          <span class="text-ink-muted px-2">4:<a href="https://github.com/erain/glue/blob/main/CHANGELOG.md" class="hover:text-accent-strong" rel="noopener">changelog</a></span>
         </div>
         <div class="text-ink-muted whitespace-nowrap">[MIT] the framework's own daily driver</div>
       </div>

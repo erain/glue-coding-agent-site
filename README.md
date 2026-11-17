@@ -1,10 +1,10 @@
 # glue-coding-agent-site
 
-Marketing homepage for the **glue coding agent** — the `glue` binary
-from [`erain/glue`](https://github.com/erain/glue): an interactive
-terminal coding agent (TUI + headless goal loop) that runs on Gemini,
-a ChatGPT subscription (Codex), or open-weight models via OpenRouter
-and NVIDIA.
+Marketing homepage for the **glue coding agent** (<https://glue-coding.vercel.app>) — the `glue` binary
+from [`erain/glue`](https://github.com/erain/glue): an AX-first, remote-first
+coding agent (interactive TUI, autonomous goal loop, direct AX gVisor sandboxes,
+two-way `ntfy` lock-screen actions, Cloudflare Access browser workspace, and
+`glue job teleport`) running across Gemini, Codex, DeepSeek, OpenRouter, and NVIDIA.
 
 Astro + Tailwind, statically generated, deployed via Vercel. Mirrors
 the pattern established in
