@@ -2,57 +2,94 @@
 import Base from "../layouts/Base.astro";
 import Section from "../components/Section.astro";
 
-const title = "glue — a coding agent for your terminal, on any model";
+const title = "glue — AX-first, remote-first coding agent for your terminal & browser";
 const description =
-  "glue is an open-source coding agent in one static Go binary. Interactive TUI, permission-gated tools, autonomous goal loop, headless CI mode — and remote jobs in AX sandboxes you can hand off, steer from your phone, and pull back as tested code. Runs on Gemini, your ChatGPT subscription (Codex), DeepSeek, or open-weight models via OpenRouter and NVIDIA.";
+  "glue is an open-source coding agent in one static Go binary. Code interactively in a terminal TUI, hand off uncommitted work to isolated AX gVisor sandboxes in 3 seconds, answer from phone lock-screen buttons at 0 CPU, steer from a Zero-Trust Cloudflare Access browser workspace, and teleport tested patches + context home — across Gemini, Codex, DeepSeek, OpenRouter, and NVIDIA.";
 
 const remoteFeatures = [
   {
-    title: "Your work, not origin's",
-    body: "Jobs start from your current branch. Unpushed work? glue refuses rather than silently work on different code — or <code>--snapshot</code> sends the working tree as it is.",
+    title: "Dirty-tree safe (--snapshot)",
+    body: "Jobs start from your branch. Uncommitted edits? glue refuses to silently drop local WIP — pass <code>--snapshot</code> to package your working tree onto a temporary ref.",
   },
   {
-    title: "Asks instead of guessing",
-    body: "When the repo contradicts the task or a decision is yours, the agent asks. Answer with <code>glue job answer</code>, inline in <code>attach</code>, or from the web UI on your phone.",
+    title: "Direct ephemeral mTLS, RAM-only secrets",
+    body: "<code>PodCertificateRequest</code> + <code>atenet-router</code> mTLS straight to AX with zero mandatory gateway. API keys and GitHub tokens go to <code>/v1/credentials</code> in memory — 0 bytes on disk.",
   },
   {
-    title: "Steer mid-run",
-    body: "<code>glue job say</code> lands at the next step; <code>--interrupt</code> stops the current model call or command and redirects it now.",
+    title: "Parallel attempts & pick",
+    body: "<code>--attempts 3</code> (and repeated <code>--model</code>) runs sandboxes in parallel; <code>glue job compare</code> lines up diffstats, tokens, and tests so <code>pick</code> keeps the winner.",
   },
   {
-    title: "Several tries at once",
-    body: "<code>--attempts 3</code> (and repeated <code>--model</code>) runs attempts in parallel; <code>glue job compare</code> lines them up and <code>pick</code> keeps the best as a draft PR.",
+    title: "Issues in, review rounds out",
+    body: "<code>--issue 123</code> reads the GitHub issue + comments and opens a closing Draft PR. <code>glue job continue --from-pr</code> feeds review threads and failed CI logs back into the sandbox.",
   },
   {
-    title: "Issues in, PRs out",
-    body: "<code>--issue 123</code> starts from a GitHub issue; the draft PR closes it. <code>glue job continue --from-pr</code> sends review comments and failed checks back to the job.",
+    title: "Steer mid-flight",
+    body: "<code>glue job say</code> queues guidance before the next model turn; <code>--interrupt</code> cancels the active model stream or shell command and redirects immediately.",
   },
   {
-    title: "From the TUI",
-    body: "<code>/remote</code> hands off the task with your session as context; <code>/jobs</code> shows status, a live transcript, and pulls results without leaving the session.",
+    title: "Repo-wide .glue/remote.yaml",
+    body: "Check in <code>setup</code>, <code>verify</code>, <code>deliver</code>, <code>egress_hosts</code>, <code>resources</code>, and <code>budgets</code> once so every teammate's <code>glue --remote</code> obeys the repo gate.",
   },
+];
+
+const anywhereFeatures = [
+  {
+    title: "Zero-CPU suspend + lock-screen buttons",
+    body: "Pair once via <code>glue job init</code> QR. On <code>ask_user</code> or permission prompts, AX suspends the sandbox to disk (0 vCPU) and pushes native HTTP <code>POST</code> buttons to <code>ntfy</code> on your phone.",
+  },
+  {
+    title: "Cloudflare Access browser workspace",
+    body: "<code>glue remote setup</code> deploys a 1-pod gateway + <code>cloudflared</code> consuming <strong>0 idle AX workers</strong>. Verifies <code>Cf-Access-Jwt-Assertion</code> JWTs — zero OAuth app, zero second login.",
+  },
+  {
+    title: "Explore in chat → Run Autonomously",
+    body: "Start an interactive workspace in <code>#/new</code> (auto-suspending between turns), then escalate the exact same sandbox in 1 click into <code>Planner → Maker → Checker</code> + unified diff + Draft PR.",
+  },
+  {
+    title: "Teleport code + context home",
+    body: "<code>glue job teleport</code> (or pressing <code>t</code> in <code>/jobs</code>) safely applies the patch onto matching <code>--snapshot</code> branches and hydrates a provider-neutral session briefing in your local TUI.",
+  },
+];
+
+const cliRows = [
+  { cmd: "glue / glue code", desc: "Interactive terminal coding TUI (--continue, --select, --model, --prompt)." },
+  { cmd: "glue job init", desc: "Doctor preflight + one-time QR phone pairing (~/.config/glue/config.yaml, 0600)." },
+  { cmd: 'glue --remote "<goal>"', desc: "Dispatch to an AX gVisor sandbox (-i interactive, --snapshot, --verify, --attempts, --issue)." },
+  { cmd: "glue remote setup", desc: "One-time opt-in cluster gateway with Cloudflare Access & Tunnel (0 idle AX workers)." },
+  { cmd: "glue job ui [--tunnel]", desc: "Instant local browser UI with #token magic link (and optional cloudflared phone QR)." },
+  { cmd: "glue job attach | list | show", desc: "Live resumable transcript (Ctrl-C detaches) or cached status without waking suspended tasks." },
+  { cmd: "glue job say | answer", desc: "Steer a running maker (--interrupt) or unblock a question/permission from any terminal." },
+  { cmd: "glue job diff | pull | pr", desc: "Inspect unified patch, pull branch/working-tree (--apply), or open an upstream Draft PR." },
+  { cmd: "glue job teleport [<id>]", desc: "Pull git changes + redacted [user, assistant] handoff briefing directly into local TUI." },
+  { cmd: 'glue goal "<goal>"', desc: "Local autonomous Planner → Maker → Checker loop (--coding, --worktree, --resume)." },
+  { cmd: "glue run | models | serve", desc: "Headless/piped prompts (--mode json), offline model catalog, and local HTTP+SSE daemon." },
 ];
 
 const providers = [
   {
     title: "Gemini (primary)",
-    body: "Google's genai SDK with first-class Gemini 3.x support — thought-signature round-tripping, streamed reasoning, API-version pinning. Coding defaults to <code>gemini-3-flash-preview</code> at low thinking: about one second per turn. <code>GEMINI_API_KEY</code> and go.",
+    body: "Google's genai SDK with Gemini 3 & 4 thinking levels, thought-signature round-tripping, and streamed reasoning. Coding defaults to <code>gemini-3-flash-preview</code> (<code>low</code> thinking, ~1s/turn).",
   },
   {
     title: "Codex — your ChatGPT subscription",
-    body: "No per-token bill. <code>codex login</code> once; glue reuses the auth. Intended for personal use.",
-  },
-  {
-    title: "OpenRouter — open-weight models",
-    body: "Kimi K2, Qwen, GLM, DeepSeek and friends by name — or <code>openrouter/free</code>, which auto-picks a currently-free model.",
+    body: "No per-token bill. Run <code>codex login</code> once; glue reuses <code>~/.codex/auth.json</code> for personal coding sessions.",
   },
   {
     title: "DeepSeek",
-    body: "Native DeepSeek API via <code>DEEPSEEK_API_KEY</code>, with its thinking levels mapped like every other provider's.",
+    body: "Native <code>DEEPSEEK_API_KEY</code> adapter defaulting to <code>deepseek-flash</code> (<code>off</code>/<code>low</code>/<code>high</code>/<code>max</code> thinking) with streamed reasoning replay across tool calls.",
+  },
+  {
+    title: "OpenRouter — open-weight models",
+    body: "Kimi K2, Qwen, GLM, Llama and friends by ID — or <code>openrouter/free</code>, which auto-selects a free model for zero-key runs.",
   },
   {
     title: "NVIDIA build + failover",
-    body: "OpenAI-compatible open-weight hosting via <code>NVIDIA_API_KEY</code>. <code>glue.WithFailover</code> skips providers whose keys aren't set.",
+    body: "OpenAI-compatible open-weight endpoints via <code>NVIDIA_API_KEY</code>. <code>glue.WithFailover</code> automatically skips providers without configured keys.",
+  },
+  {
+    title: "Offline catalog & live picker",
+    body: "<code>glue models</code> lists curated defaults and verified thinking levels without credentials; <code>glue run --select</code> opens an interactive arrow-key picker.",
   },
 ];
 
@@ -89,24 +126,24 @@ const tuiFeatures = [
     body: "Every side-effecting tool call renders as a card with a spinner — and the [a]llow / [s]ession / [t]his-file / [n]o prompt right inside it. Reads never nag.",
   },
   {
-    title: "edit_file diff preview",
-    body: "See the exact surgical replacement before you approve it, not after.",
+    title: "/jobs Mission Control & /teleport",
+    body: "Live status bar (<code>⧗ N remote jobs · M waiting</code>) without waking suspended sandboxes. Open <code>/jobs</code> to toggle diffs (<code>d</code>), steer (<code>s</code>/<code>i</code>), open Draft PRs (<code>o</code>), or teleport home (<code>t</code>).",
   },
   {
-    title: "@-file and /-command pickers",
-    body: "Type @ to fuzzy-pick a workspace file inline (secrets blocklisted); type / for filtering command autocomplete.",
+    title: "@-file & /-command pickers",
+    body: "Type <code>@</code> to fuzzy-pick workspace files inline (secrets blocklisted); type <code>/</code> for command autocomplete; <code>Ctrl+Y</code> / <code>/copy</code> copies raw Markdown over SSH via OSC 52.",
   },
   {
-    title: "Markdown transcript",
-    body: "Streaming text re-renders as markdown after each turn settles. Mouse-wheel and PgUp/PgDn scroll; sticky-scroll keeps you pinned to the bottom only when you were there.",
+    title: "edit_file diff preview & Markdown",
+    body: "Inspect surgical replacements before approving. Streaming text settles into rendered Markdown with mouse-wheel, PgUp/PgDn, and sticky-bottom scroll.",
   },
   {
-    title: "Session tree",
-    body: "/fork branches from any message, /clone duplicates, /tree visualizes the lineage and switches between branches.",
+    title: "Session tree (/fork, /clone, /tree)",
+    body: "<code>/fork</code> branches from any message, <code>/clone</code> duplicates, and <code>/tree</code> visualizes the <code>├─ / └─</code> lineage to switch branches cleanly.",
   },
   {
-    title: "Context controls",
-    body: "/compact summarizes older turns token-aware; /usage shows spend; /resume replays any stored session from a picker.",
+    title: "Token-aware compaction",
+    body: "<code>/compact</code> summarizes older turns into a structured state snapshot with a cumulative read/modified file ledger that survives repeated compactions.",
   },
 ];
 ---
@@ -122,20 +159,21 @@ const tuiFeatures = [
  \__, |_|\__,_|\___|
  |___/</pre>
       <div class="text-xs text-ink-muted tracking-wider mb-6">
-        <span class="text-accent">[</span> open source <span class="text-accent">·</span> one static go binary <span class="text-accent">·</span> MIT <span class="text-accent">]</span>
+        <span class="text-accent">[</span> ax-first <span class="text-accent">·</span> remote-first <span class="text-accent">·</span> one static go binary <span class="text-accent">·</span> MIT <span class="text-accent">]</span>
       </div>
       <h1 class="text-3xl sm:text-[2.6rem] font-bold tracking-tight text-ink leading-[1.15] mb-6">
-        A coding agent for your terminal.
+        In your terminal. On AX.
         <br class="hidden sm:block" />
         <span class="glow">On any model.</span>
       </h1>
       <p class="text-base sm:text-lg text-ink-soft leading-relaxed max-w-2xl mb-10">
-        <strong class="text-ink font-semibold">glue</strong> is an interactive
-        coding agent — and a headless one for cron and CI — that can hand a
-        task to a remote sandbox while you close the laptop. Gemini
-        first-class, your ChatGPT subscription via Codex, DeepSeek, or
-        open-weight models through OpenRouter and NVIDIA. Permission-gated
-        tools, an autonomous goal loop, and no runtime to install.
+        <strong class="text-ink font-semibold">glue</strong> is an open-source coding agent
+        that runs locally in a fast terminal TUI and remotely inside isolated
+        <a href="https://github.com/google/ax" class="text-accent underline" rel="noopener">AX</a>
+        gVisor sandboxes. Dispatch uncommitted work in 3 seconds, tap answers from
+        phone lock-screen buttons at 0 CPU, control workspaces from a Zero-Trust
+        Cloudflare Access browser URL, and teleport tested code + context back into
+        your checkout.
       </p>
       <div class="flex flex-wrap items-center gap-3 mb-10">
         <a href="https://github.com/erain/glue#the-glue-cli" class="btn btn-solid" rel="noopener">
@@ -144,83 +182,71 @@ const tuiFeatures = [
         <a href="https://github.com/erain/glue/blob/main/docs/remote-quickstart.md" class="btn btn-ghost" rel="noopener">
           [ remote in 5 min ]
         </a>
-        <a href="https://github.com/erain/glue" class="btn btn-ghost" rel="noopener">
-          [ view source ]
+        <a href="https://github.com/erain/glue/blob/main/docs/cli.md" class="btn btn-ghost" rel="noopener">
+          [ cli &amp; tui docs ]
         </a>
       </div>
       <div class="term">
         <div class="term-bar">
           <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
-          <span class="term-title">erain@dev: ~/src/yourrepo</span>
+          <span class="term-title">erain@dev: ~/src/payments (feat/jitter*)</span>
         </div>
         <pre class="term-body"><code><span class="tok-g">$</span> go install github.com/erain/glue/cmd/glue@latest
-<span class="tok-g">$</span> export GEMINI_API_KEY=<span class="tok-d">...</span>
-<span class="tok-g">$</span> glue run <span class="tok-a">--coding</span> <span class="tok-a">--work</span> .
+<span class="tok-g">$</span> glue                               <span class="tok-d"># interactive local coding TUI</span>
+<span class="tok-g">$</span> glue <span class="tok-a">--remote</span> <span class="tok-c">"Add bounded jitter &amp; race tests"</span> \
+    <span class="tok-a">--snapshot --verify</span> <span class="tok-c">"go test -race ./limiter/..."</span>
+  <span class="tok-c">[2.8s]</span> started <span class="tok-b">job-7c4e91a0</span> <span class="tok-d">· gVisor sandbox · safe to close lid</span>
+         browser <span class="tok-g">https://glue.acme.dev/#/jobs/job-7c4e91a0</span>
 
-  <span class="tok-b">glue</span> <span class="tok-d">· no node, no python, no docker</span>
-  <span class="tok-g">✓</span> provider  <span class="tok-c">gemini-3.x</span>     <span class="tok-d">(capability registry loaded)</span>
-  <span class="tok-g">✓</span> tools     read_file edit_file grep shell_exec git_* …
-  <span class="tok-g">✓</span> session   restored <span class="tok-d">·</span> history repaired <span class="tok-d">·</span> 0 orphaned calls
-
-<span class="tok-a">›</span> what should we build?<span class="cursor" aria-hidden="true"></span></code></pre>
+<span class="tok-g">$</span> glue job teleport latest           <span class="tok-d"># pulls patch + session briefing into TUI</span>
+  <span class="tok-g">✓</span> applied to feat/jitter <span class="tok-d">·</span> hydrated .glue/sessions/teleport-7c4e91a0.json</code></pre>
       </div>
       <div class="text-xs text-ink-muted tracking-wide mt-6">
-        gemini <span class="text-accent">·</span> chatgpt subscription (codex) <span class="text-accent">·</span> deepseek <span class="text-accent">·</span> openrouter open-weights <span class="text-accent">·</span> nvidia build <span class="text-accent">·</span> goal loop <span class="text-accent">·</span> remote ax sandboxes <span class="text-accent">·</span> tui + headless
+        ax gvisor sandboxes <span class="text-accent">·</span> cloudflare access webui <span class="text-accent">·</span> ntfy lock-screen push <span class="text-accent">·</span> teleport <span class="text-accent">·</span> gemini <span class="text-accent">·</span> codex <span class="text-accent">·</span> deepseek <span class="text-accent">·</span> openrouter <span class="text-accent">·</span> nvidia
       </div>
     </div>
   </section>
 
-  <Section num="01" id="what" eyebrow="What it is" title="The coding agent that doesn't pick your model.">
+  <Section num="01" id="what" eyebrow="What it is" title="One harness across local terminals, AX sandboxes, and every model.">
     <p>
-      Most coding agents are a front-end for one vendor. glue is the
-      harness: an interactive TUI, a permission-gated local tool set
-      (<code>read_file</code>, <code>edit_file</code>, <code>grep</code>,
-      <code>shell_exec</code>, git helpers, …), and an agent loop that runs
-      the same way on every provider it ships —
-      <strong>Gemini</strong> as the primary target, <strong>Codex</strong>
-      against your existing ChatGPT subscription, <strong>DeepSeek</strong>
-      natively, and <strong>open-weight models</strong> (Kimi K2, Qwen, GLM)
-      through OpenRouter or NVIDIA build.
+      Most coding agents lock you to one model vendor and die the moment you close
+      your laptop lid. glue separates <strong>where work executes</strong> (locally in
+      your checkout or remotely on <a href="https://github.com/google/ax" rel="noopener">AX</a>)
+      from <strong>which model thinks</strong> — running the exact same tool bundle,
+      goal loop, and transcript hardening across <strong>Gemini</strong>,
+      <strong>Codex</strong> (your ChatGPT subscription), <strong>DeepSeek</strong>,
+      <strong>OpenRouter</strong>, and <strong>NVIDIA</strong>.
     </p>
     <p>
-      It installs as one static Go binary. No Node, no Python, no Docker —
-      <code>go install</code> and you're coding.
-    </p>
-    <p>
-      Under the hood it's the reference consumer of the
-      <a href="https://glue-framework-site.vercel.app" rel="noopener">glue agent framework</a>:
-      the coding tool bundle, the loop, sessions, and permissions are all
-      library API you can reuse in your own agents
+      It ships as one static Go binary — no Node, Python, or Docker required on your
+      laptop — and is built directly on the public
+      <a href="https://glue-framework-site.vercel.app" rel="noopener">glue Go agent framework</a>
       (<a href="https://github.com/erain/glue/blob/main/docs/adr/0012-sdk-coding-agent-peggy-boundary.md" rel="noopener">ADR-0012</a>).
     </p>
   </Section>
 
-  <Section num="02" id="remote" tone="soft" eyebrow="Remote" title="Hand it off. Close the laptop. Pull back tested code.">
+  <Section num="02" id="remote" tone="soft" eyebrow="Remote Dispatch" title="Fire from a dirty branch in 3 seconds. Zero cluster setup.">
     <p>
-      <code>glue --remote</code> sends the task to an isolated
-      <a href="https://github.com/google/ax" rel="noopener">AX</a> sandbox
-      (gVisor) on your cluster. Your uncommitted work goes with it
-      (<code>--snapshot</code>), your phone hears when it&rsquo;s done or
-      needs an answer, and the result lands in your checkout with one
-      command. A job starts in about three seconds.
+      <code>glue --remote</code> talks straight to AX over ephemeral
+      <code>PodCertificateRequest</code> mTLS
+      (<a href="https://github.com/erain/glue/blob/main/docs/adr/0020-ax-first-direct-execution.md" rel="noopener">ADR-0020</a>)
+      using the published <code>ghcr.io/erain/glue-task</code> image (Go, Node.js,
+      Python, C/C++, ripgrep, jq). Run <code>glue job init</code> once to verify
+      connectivity and pair your phone via QR code.
     </p>
     <div class="term">
       <div class="term-bar">
         <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
         <span class="term-title">erain@dev: ~/src/yourrepo</span>
       </div>
-      <pre class="term-body"><code><span class="tok-g">$</span> glue job doctor
-  <span class="tok-g">ok</span>  ax connection  tunnels up, router credentials minted
-  <span class="tok-g">ok</span>  task image     ghcr.io/erain/glue-task@sha256:309f… <span class="tok-d">(published)</span>
-  <span class="tok-g">ok</span>  github token   from gh auth token, can push
-<span class="tok-g">$</span> glue <span class="tok-a">--remote</span> <span class="tok-c">"Add Sub(a, b int) next to Add, with a table-driven test"</span> \
-    <span class="tok-a">--snapshot --attempts 2 --verify</span> <span class="tok-c">"go test ./..."</span> <span class="tok-a">--notify</span> https://ntfy.sh/<span class="tok-d">&lt;topic&gt;</span>
+      <pre class="term-body"><code><span class="tok-g">$</span> glue job init                         <span class="tok-d"># doctor checks + QR phone pairing (0600 config.yaml)</span>
+<span class="tok-g">$</span> glue <span class="tok-a">--remote</span> <span class="tok-c">"Add Sub(a, b int) next to Add, with table-driven tests"</span> \
+    <span class="tok-a">--snapshot --attempts 2 --verify</span> <span class="tok-c">"go test ./..."</span>
   <span class="tok-d">submitted 2 jobs in 6.0s · group grp-feb93e9dc9ca</span>
 <span class="tok-g">$</span> glue job compare grp-feb93e9dc9ca
-  job-f8a57d276fb8  achieved  <span class="tok-g">pass</span>  2 files +38 -0  2m50s
-  job-cf7e5e72a8c4  achieved  <span class="tok-g">pass</span>  2 files +28 -0  2m58s
-<span class="tok-g">$</span> glue job pull job-f8a57d276fb8 <span class="tok-a">--apply</span> &amp;&amp; go test ./...
-  ok  example.com/sandbox  0.002s</code></pre>
+  job-f8a57d276fb8  achieved  <span class="tok-g">pass</span>  2 files +38 -0  2m50s  42090 tok
+  job-cf7e5e72a8c4  achieved  <span class="tok-g">pass</span>  2 files +28 -0  2m58s  68290 tok
+<span class="tok-g">$</span> glue job pick job-f8a57d276fb8        <span class="tok-d"># opens Draft PR &amp; cleans up sibling attempts</span></code></pre>
     </div>
     <div class="cap-grid mt-8">
       {remoteFeatures.map((c) => (
@@ -230,19 +256,72 @@ const tuiFeatures = [
         </div>
       ))}
     </div>
+  </Section>
+
+  <Section num="03" id="anywhere" eyebrow="Anywhere UX" title="Close the laptop: lock-screen buttons, Zero-Trust browser & teleport.">
+    <p>
+      Add an opt-in, bookmarkable browser workspace to your cluster in one command
+      (<a href="https://github.com/erain/glue/blob/main/docs/adr/0021-opt-in-cluster-gateway-cloudflare-access.md" rel="noopener">ADR-0021</a>) —
+      or run <code>glue job ui --open --tunnel</code> for an instant local magic-link
+      UI with a phone QR code. Idle sandboxes suspend to disk at <strong>0 CPU</strong>,
+      and read-only views never wake them.
+    </p>
+    <div class="cap-grid mt-6 mb-6">
+      <div class="term">
+        <div class="term-bar">
+          <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+          <span class="term-title">https://glue.acme.dev/#/jobs/job-7c4e91a0</span>
+        </div>
+        <pre class="term-body"><code><span class="tok-g">✓ CF Access:</span> dev@acme.dev <span class="tok-d">(0 idle AX workers)</span>
+
+<span class="tok-b">Interactive Chat</span> <span class="tok-d">→</span> <span class="tok-g">edit_file</span> limiter/retry.go <span class="tok-g">✓</span>
+<span class="tok-a">[ Run Autonomously ]</span> verify: <span class="tok-c">go test -race ./...</span>
+
+<span class="tok-g">ACHIEVED</span> <span class="tok-d">·</span> EXIT 0 <span class="tok-d">·</span> +42 -3
+<span class="tok-g">▶</span> <span class="tok-b">[ Open Draft PR #142 ]</span></code></pre>
+      </div>
+      <div class="term">
+        <div class="term-bar">
+          <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+          <span class="term-title">phone lock screen · ntfy · laptop closed</span>
+        </div>
+        <pre class="term-body"><code><span class="tok-a">SUSPENDED</span> <span class="tok-d">· 0.00 vCPU · ask_user</span>
+At MaxAttempts (5), cap delay or error?
+
+<span class="tok-d">[ Cap delay at 30s ]</span>
+<span class="tok-g">[ Return ErrRetryExhausted ]</span> <span class="tok-d">← HTTP POST</span>
+
+<span class="tok-g">✓ Woke sandbox in 1.4s</span> <span class="tok-d">· token redacted</span></code></pre>
+      </div>
+    </div>
+    <pre><code><span class="tok-d"># one-time cluster browser workspace (Cloudflare Access JWT + Tunnel, 0 AX workers used)</span>
+<span class="tok-g">$</span> glue remote setup <span class="tok-a">--public-url</span> https://glue.acme.dev \
+    <span class="tok-a">--cf-team</span> acme.cloudflareaccess.com <span class="tok-a">--cf-aud</span> &lt;aud&gt; <span class="tok-a">--allow-email</span> you@acme.dev \
+    <span class="tok-a">--tunnel-token</span> <span class="tok-c">"$CLOUDFLARE_TUNNEL_TOKEN"</span>
+
+<span class="tok-d"># back at your desk: pull git changes + provider-neutral session briefing into local TUI</span>
+<span class="tok-g">$</span> glue job teleport job-7c4e91a0</code></pre>
+    <div class="cap-grid mt-8">
+      {anywhereFeatures.map((c) => (
+        <div class="cap-card">
+          <h3>{c.title}</h3>
+          <p set:html={c.body}></p>
+        </div>
+      ))}
+    </div>
     <p class="mt-8">
-      Start with the
-      <a href="https://github.com/erain/glue/blob/main/docs/remote-quickstart.md" rel="noopener">five-minute quickstart</a>;
-      <code>scripts/demo/aha.sh</code> runs that exact story against a live
-      cluster and fails on any miss.
+      Verified on every release against a live Kind + gVisor + headless Chrome stack by
+      <a href="https://github.com/erain/glue/blob/main/scripts/demo/aha.sh" rel="noopener"><code>scripts/demo/aha.sh</code></a>
+      and
+      <a href="https://github.com/erain/glue/blob/main/scripts/demo/anywhere.sh" rel="noopener"><code>scripts/demo/anywhere.sh</code></a>.
     </p>
   </Section>
 
-  <Section num="03" id="tui" eyebrow="Interactive" title="A TUI that stays out of the way.">
+  <Section num="04" id="tui" tone="soft" eyebrow="Interactive" title="A TUI that stays out of the way — with remote Mission Control built in.">
     <div class="term">
       <div class="term-bar">
         <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
-        <span class="term-title">glue · session 4f2a · gemini-3.x</span>
+        <span class="term-title">glue · session 4f2a · gemini-3-flash · ⧗ 2 remote jobs · 1 waiting</span>
       </div>
       <pre class="term-body"><code><span class="tok-g">▶</span> <span class="tok-b">edit_file</span>  internal/server/router.go
     <span class="tok-r">- mux.Handle("/healthz", health)</span>
@@ -251,10 +330,10 @@ const tuiFeatures = [
 
 <span class="tok-c">⠸</span> <span class="tok-b">shell_exec</span>  go test ./internal/server/
 
-  All 14 tests pass. The health endpoint now logs
-  requests like every other route.
+  All 14 tests pass. Type <span class="tok-c">/remote</span> to hand off the soak suite,
+  or <span class="tok-c">/jobs</span> to inspect &amp; teleport finished AX runs.
 
-<span class="tok-a">›</span> fix the flaky TestRetryBackoff next<span class="cursor" aria-hidden="true"></span></code></pre>
+<span class="tok-a">›</span> /remote --snapshot Add 16-goroutine race tests across router/<span class="cursor" aria-hidden="true"></span></code></pre>
     </div>
     <div class="cap-grid mt-8">
       {tuiFeatures.map((c) => (
@@ -265,45 +344,71 @@ const tuiFeatures = [
       ))}
     </div>
     <p class="mt-8">
-      Run <code>glue run --coding --work .</code> in a terminal and the TUI
-      opens by default. Designed in
+      Run bare <code>glue</code> (or <code>glue code --continue</code>) in any
+      checkout to launch the TUI. Designed in
       <a href="https://github.com/erain/glue/blob/main/docs/adr/0014-coding-agent-tui.md" rel="noopener">ADR-0014</a>
       and <a href="https://github.com/erain/glue/blob/main/docs/adr/0015-session-tree.md" rel="noopener">ADR-0015</a>.
     </p>
   </Section>
 
-  <Section num="04" id="goal" tone="soft" eyebrow="Autonomous" title="The goal loop: plan, make, verify — repeat.">
+  <Section num="05" id="goal" eyebrow="Autonomous" title="The goal loop: plan, make, verify — repeat.">
     <p>
-      <code>/goal</code> in the TUI (or <code>glue goal</code> headless)
-      turns one objective into an autonomous loop: a planner decomposes it
-      into a verifiable checklist, a fresh <strong>maker</strong> session
-      works each iteration, and a separate <strong>checker</strong> session
-      audits the evidence — the writer never grades its own homework.
-      Guardrails bound it: max iterations, no-progress detection, token
-      budget.
+      <code>/goal</code> in the TUI, <code>glue goal</code> locally, and
+      <code>glue --remote</code> on AX all share the same autonomous engine: a
+      planner decomposes the objective into a verifiable checklist, a fresh
+      <strong>maker</strong> session executes each iteration, and an independent
+      read-only <strong>checker</strong> audits the evidence — the writer never
+      grades its own homework.
     </p>
-    <pre><code><span class="tok-d"># pursue a goal autonomously: plan → make → verify, per iteration</span>
+    <pre><code><span class="tok-d"># isolated local git worktree goal (your checkout stays untouched on branch goal/&lt;id&gt;)</span>
 <span class="tok-g">$</span> glue goal <span class="tok-a">--coding --yolo --worktree</span> \
     <span class="tok-c">"Make golangci-lint pass on ./... without disabling checks"</span>
 
-<span class="tok-d"># exit code reflects the outcome:</span>
+<span class="tok-d"># exit code reflects the outcome for CI / cron:</span>
 <span class="tok-d">#</span> <span class="tok-g">0</span> achieved <span class="tok-d">·</span> <span class="tok-a">2</span> blocked <span class="tok-d">·</span> <span class="tok-a">3</span> max-iterations <span class="tok-d">·</span> <span class="tok-a">4</span> budget <span class="tok-d">·</span> <span class="tok-r">1</span> error
 
-<span class="tok-g">$</span> glue goal <span class="tok-a">--list</span>      <span class="tok-d"># stored goals with status and age</span>
-<span class="tok-g">$</span> glue goal <span class="tok-a">--resume</span>    <span class="tok-d"># continue from the verified checklist</span></code></pre>
+<span class="tok-g">$</span> glue goal <span class="tok-a">--list</span> &amp;&amp; glue goal <span class="tok-a">--resume</span></code></pre>
     <p>
-      Goals checkpoint to the session store, so they survive restarts and
-      resume from the last verified checklist. <code>--worktree</code> runs
-      the whole loop in an isolated git worktree on branch
-      <code>goal/&lt;id&gt;</code> — your checkout stays untouched and the
-      result is a reviewable branch, never an auto-merge. Status-mapped
-      exit codes make it schedulable from cron, CI, or another agent.
-      Designed in
+      Goals checkpoint to the session store after every iteration so they survive
+      restarts and AX suspend/resume cycles without re-planning. Designed in
       <a href="https://github.com/erain/glue/blob/main/docs/adr/0016-goal-loop.md" rel="noopener">ADR-0016</a>.
     </p>
   </Section>
 
-  <Section num="05" id="providers" eyebrow="Models" title="Bring a key, a subscription, or neither.">
+  <Section num="06" id="cli" tone="soft" eyebrow="CLI Reference" title="Every command in one static binary.">
+    <div class="term">
+      <div class="term-bar">
+        <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+        <span class="term-title">glue --help</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="cmd-table">
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>What it does</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cliRows.map((r) => (
+              <tr>
+                <td><code>{r.cmd}</code></td>
+                <td>{r.desc}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="mt-6">
+      Full flags, TUI hotkeys, and <code>.glue/remote.yaml</code> schema live in
+      <a href="https://github.com/erain/glue/blob/main/docs/cli.md" rel="noopener"><code>docs/cli.md</code></a>
+      and
+      <a href="https://github.com/erain/glue/blob/main/docs/jobs.md" rel="noopener"><code>docs/jobs.md</code></a>.
+    </p>
+  </Section>
+
+  <Section num="07" id="providers" eyebrow="Models" title="Bring a key, a subscription, or neither.">
     <div class="cap-grid">
       {providers.map((c) => (
         <div class="cap-card">
@@ -313,15 +418,15 @@ const tuiFeatures = [
       ))}
     </div>
     <p class="mt-8">
-      Switch with <code>--provider</code> / <code>--model</code>, or
-      mid-session with <code>/model</code>. A per-provider capability
-      registry — context window, parallel-tool safety, prompt variant,
-      stall-proneness — tunes the harness automatically, so the agent
-      behaves the same everywhere without if-this-model-then hacks.
+      Switch per run with <code>--provider</code> / <code>--model</code> /
+      <code>--thinking</code>, mid-session with <code>/model</code>, or set defaults
+      in <code>~/.config/glue/config.yaml</code>. And because <code>glue job teleport</code>
+      writes a provider-neutral briefing, a job run on Gemini on AX continues
+      seamlessly on Codex or DeepSeek locally.
     </p>
   </Section>
 
-  <Section num="06" id="harness" tone="soft" eyebrow="Reliability" title="A harness that absorbs model sloppiness.">
+  <Section num="08" id="harness" tone="soft" eyebrow="Reliability" title="A harness that absorbs model sloppiness.">
     <p>
       Most wasted agent turns come from the harness, not the model: a
       failed edit match, a truncated log missing the error, an orphaned
@@ -341,67 +446,64 @@ const tuiFeatures = [
     </div>
   </Section>
 
-  <Section num="07" id="safety" eyebrow="Safety" title="Permission-gated, honestly scoped.">
+  <Section num="09" id="safety" eyebrow="Safety" title="Permission-gated locally, gVisor + Zero-Trust remotely.">
     <p>
-      Reads and navigation are free; <code>write_file</code>,
-      <code>edit_file</code>, and <code>shell_exec</code> ask first —
-      inline, in the tool card, with allow-once / allow-for-session /
-      allow-for-file grades. <code>--yolo</code> auto-approves everything
-      for trusted feature branches, and goal runs prefer
-      <code>--worktree</code> isolation so even full autonomy can't touch
-      your checkout.
+      Locally, reads and navigation are free while <code>write_file</code>,
+      <code>edit_file</code>, and <code>shell_exec</code> prompt inline with
+      allow-once / allow-session / allow-file grades (<code>--yolo</code> and
+      <code>--worktree</code> cover autonomous branches, and <code>@</code>-mentions
+      blocklist <code>.env</code> and key files).
     </p>
     <p>
-      Local runs are not sandboxed — glue says so instead of pretending.
-      For isolation, run the job remotely: <code>glue --remote</code> executes
-      in an AX sandbox (gVisor) with a default-deny egress allowlist, the
-      agent&rsquo;s shell commands don&rsquo;t get your GitHub token, and the planner and checker get
-      read-only tools so they can&rsquo;t rewrite the work they audit. The
-      <code>@</code>-mention picker and <code>grep</code> refuse
-      secret-shaped files (<code>.env</code>, keys) on their own.
+      Remotely, <code>glue --remote</code> isolates every job inside an AX gVisor
+      sandbox with a default-deny TLS egress allowlist. Model and GitHub credentials
+      are pushed in memory via <code>POST /v1/credentials</code> (never stored in
+      <code>Task.spec.env</code> or exposed to agent shell commands), git pushes run
+      through an out-of-band <code>GIT_ASKPASS</code> helper, and <code>ntfy</code>
+      reply tokens are automatically redacted before events hit disk.
     </p>
   </Section>
 
-  <Section num="08" id="scriptable" tone="soft" eyebrow="Headless" title="Scriptable from day one.">
-    <pre><code><span class="tok-d"># one-shot</span>
-<span class="tok-g">$</span> glue run <span class="tok-a">--coding --prompt</span> <span class="tok-c">"Run the tests, fix the first failure."</span>
+  <Section num="0A" id="scriptable" tone="soft" eyebrow="Headless" title="Scriptable from day one.">
+    <pre><code><span class="tok-d"># one-shot coding fix</span>
+<span class="tok-g">$</span> glue code <span class="tok-a">--prompt</span> <span class="tok-c">"Run the tests and fix the first failure."</span>
 
-<span class="tok-d"># pipe a prompt in</span>
-<span class="tok-g">$</span> git diff main | glue run <span class="tok-a">--prompt</span> <span class="tok-c">"Review this diff for bugs."</span>
+<span class="tok-d"># pipe a diff in for review</span>
+<span class="tok-g">$</span> git diff main | glue run <span class="tok-a">--prompt</span> <span class="tok-c">"Review this diff for race conditions."</span>
 
-<span class="tok-d"># stable JSONL events for scripting</span>
+<span class="tok-d"># stable JSONL event stream for CI &amp; custom tooling</span>
 <span class="tok-g">$</span> glue run <span class="tok-a">--coding --mode</span> json <span class="tok-a">--prompt</span> <span class="tok-c">"..."</span> | jq -r <span class="tok-c">'.type'</span></code></pre>
     <p>
-      The same binary serves a local HTTP+SSE daemon
-      (<code>glue serve</code> / <code>glue connect</code>) that streams
-      runs and brokers permission prompts to the connected client — the
-      protocol other channels (Telegram, dashboards) build on.
+      The same binary runs a local HTTP+SSE daemon
+      (<code>glue serve --coding</code> / <code>glue connect</code>) that powers
+      <code>glue job ui</code> and custom automation channels.
     </p>
   </Section>
 
-  <Section num="09" id="stack" eyebrow="Built on glue" title="One project, three faces.">
+  <Section num="0B" id="stack" eyebrow="Built on glue" title="One project, three faces.">
     <div class="cap-grid">
       <div class="cap-card">
         <h3>The framework</h3>
         <p>
-          The Go library underneath: provider-agnostic loop, typed tools,
-          stores, MCP, daemon.
+          The composable Go SDK underneath: provider-agnostic loop, typed tools,
+          SQLite FTS5 store, MCP client, compaction, and goal engine.
           <a href="https://glue-framework-site.vercel.app" rel="noopener">glue-framework-site.vercel.app</a>
         </p>
       </div>
       <div class="cap-card">
         <h3>glue-review</h3>
         <p>
-          A free pre-push branch reviewer that posts one sticky PR comment.
+          A zero-cost pre-push branch reviewer (CLI + GitHub Action) that posts one
+          sticky PR comment with a copy-pasteable fix block.
           <a href="https://glue-review.vercel.app" rel="noopener">glue-review.vercel.app</a>
         </p>
       </div>
       <div class="cap-card">
         <h3>This coding agent</h3>
         <p>
-          <code>cmd/glue</code> in the same repo — the framework's own
-          daily driver, locally and on AX.
-          <a href="https://github.com/erain/glue/tree/main/cmd/glue" rel="noopener">Source</a>
+          <code>cmd/glue</code> + <code>webui</code> + <code>gateway</code> in the
+          same repository — daily driver locally and on AX.
+          <a href="https://github.com/erain/glue" rel="noopener">github.com/erain/glue</a>
         </p>
       </div>
     </div>
@@ -410,7 +512,7 @@ const tuiFeatures = [
   <section id="faq" class="border-b border-line bg-paper">
     <div class="max-w-3xl mx-auto px-6 py-16 sm:py-20">
       <div class="flex items-baseline gap-3 mb-3">
-        <span class="section-num">[0x0A]</span>
+        <span class="section-num">[0x0C]</span>
         <span class="text-xs tracking-wider text-ink-muted">// faq</span>
       </div>
       <h2 class="text-xl sm:text-2xl font-semibold tracking-tight text-ink mb-8 leading-snug">
@@ -420,69 +522,56 @@ const tuiFeatures = [
         <div>
           <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> How is this different from Claude Code, Codex CLI, or Gemini CLI?</h3>
           <p>
-            Those are excellent harnesses for one vendor's models. glue is
-            model-agnostic by construction: the same TUI, tools, permission
-            model, and goal loop on Gemini, a ChatGPT subscription, or
-            open-weight models — switchable per session. And the whole
-            agent is library API underneath, so what the binary does, your
-            own Go agent can do too.
+            Two ways: first, glue is model-agnostic — the same TUI, tools, and
+            <code>Planner → Maker → Checker</code> loop run on Gemini, your ChatGPT
+            subscription, DeepSeek, or open-weight models. Second, remote mode is
+            first-class on <a href="https://github.com/google/ax" rel="noopener">AX</a>:
+            uncommitted snapshots, 0-CPU suspend on questions, phone lock-screen
+            buttons, a Zero-Trust Cloudflare Access web workspace, and one-command
+            <code>teleport</code> back into your local TUI.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> How do browser and phone control work when my laptop is closed?</h3>
+          <p>
+             CLI dispatch (<code>glue --remote</code>) needs zero cluster services,
+            and pairing <code>ntfy</code> via <code>glue job init</code> gives you
+            two-way lock-screen HTTP action buttons out of the box. For a permanent
+            browser URL, run <code>glue remote setup</code> once: it deploys a
+            lightweight <code>glue-gateway</code> + <code>cloudflared</code> pod that
+            uses <strong>0 AX worker slots</strong>, verifies Cloudflare Access JWTs
+            with no second login screen, serves cached job state while sandboxes sleep,
+            and wakes AX tasks only when you send a message or start a run.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Why use <code>glue job teleport</code> instead of <code>git pull</code>?</h3>
+          <p>
+            <code>git pull</code> brings files, leaving your local coding agent blind
+            to what was tried, what you answered on your phone, and which checks ran.
+            <code>glue job teleport</code> safely applies the patch onto matching
+            <code>--snapshot</code> branches without clobbering unrelated local WIP
+            <em>and</em> hydrates a redacted <code>[user, assistant]</code> briefing
+            in <code>.glue/sessions</code> so your very next TUI prompt has full context.
           </p>
         </div>
         <div>
           <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Can I run it for free?</h3>
           <p>
-            Two honest paths: the Codex provider rides your existing
-            ChatGPT subscription (no per-token bill), and
-            <code>--provider openrouter --model openrouter/free</code>
-            auto-picks a currently-free open-weight model. Expect free
-            models to be slower and less reliable than Gemini.
+            Yes: the Codex provider uses your existing ChatGPT subscription with no
+            per-token API charges, and <code>openrouter/free</code> auto-picks a free
+            open-weight model. For fastest coding turns (~1s median), use
+            <code>gemini-3-flash-preview</code>.
           </p>
         </div>
         <div>
-          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Is it sandboxed?</h3>
+          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> What do I need to run remote AX jobs?</h3>
           <p>
-            Local runs: no — side effects are permission-gated and goal runs
-            can be isolated in a git worktree, but treat <code>--yolo</code>
-            like any tool with shell access. Remote runs: yes —
-            <code>glue --remote</code> executes in an
-            <a href="https://github.com/google/ax" rel="noopener">AX</a>
-            sandbox (gVisor) with an egress allowlist, and delivers a branch
-            or draft PR instead of touching your checkout.
-          </p>
-        </div>
-        <div>
-          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Which model should I use?</h3>
-          <p>
-            Gemini 3.x is the primary target and gets the most harness
-            attention (thought-signature replay, streamed reasoning,
-            stall recovery). Codex is the zero-marginal-cost daily
-            driver if you already pay for ChatGPT. Open-weight models
-            via OpenRouter/NVIDIA are the explicit second target: the
-            v1.13.0 reliability work (self-repairing edits, guardrails,
-            retries) is tuned for exactly their failure modes.
-          </p>
-        </div>
-        <div>
-          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> Where does it run?</h3>
-          <p>
-            Anywhere a Go binary runs — Linux and macOS terminals today.
-            The TUI needs a real terminal; everything else
-            (<code>--prompt</code>, pipes, <code>--mode json</code>,
-            <code>glue goal</code>, <code>glue serve</code>) is headless.
-            Remote jobs need an AX cluster in your Kubernetes context (a
-            local kind cluster works: <code>scripts/ax-dev/up.sh</code>) and
-            use a published task image with Go, Node.js, Python and a C
-            toolchain — nothing to build.
-          </p>
-        </div>
-        <div>
-          <h3 class="text-ink font-semibold mb-2"><span class="text-accent">?</span> API stability?</h3>
-          <p>
-            The CLI surface is stable in practice; the library underneath
-            reserves the right to break API on minor bumps until a
-            deliberate lock — see the
-            <a href="https://github.com/erain/glue/blob/main/docs/adr/0013-pre-1-0-stability-stance.md" rel="noopener">stability stance</a>
-            and <a href="https://github.com/erain/glue/blob/main/CHANGELOG.md" rel="noopener">CHANGELOG</a>.
+            An AX cluster in your Kubernetes context (for local development on a
+            workstation, <code>scripts/ax-dev/up.sh</code> stands up Kind + Agent
+            Substrate + AX gVisor workers) plus <code>gh auth login</code> and a
+            model API key. Jobs run the published <code>ghcr.io/erain/glue-task</code>
+            image by digest — nothing to build.
           </p>
         </div>
       </div>
